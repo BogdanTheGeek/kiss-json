@@ -175,12 +175,7 @@ void kJSON_InitRoot(json_t *const jsonHandle)
    jsonHandle->size += bytes;
    jsonHandle->tail += bytes;
    // Account for closing brace
-#if 1
    jsonHandle->size += strlen(jsonHandle->newLine) + (char_size(OBJECT_END) - 1);
-#else
-   jsonHandle->size += strlen(jsonHandle->newLine);
-#endif
-   printf("size enter: %d\n", jsonHandle->size);
 }
 
 void kJSON_ExitRoot(json_t *const jsonHandle)
@@ -190,12 +185,8 @@ void kJSON_ExitRoot(json_t *const jsonHandle)
    StartEntry(jsonHandle);
    int bytes = ExitRoot(jsonHandle->tail);
    jsonHandle->tail += bytes;
-#if 1
    jsonHandle->size += trim;
    jsonHandle->size -= strlen(jsonHandle->newLine);
-   printf("trim: %d\n", trim);
-   printf("size exit: %d\n", jsonHandle->size);
-#endif
 }
 
 void kJSON_EnterObject(json_t *const jsonHandle, const char *const key)
@@ -378,21 +369,21 @@ static int GetNumDigits(const int value)
 static bool StringFits(json_t *const jsonHandle, const char *const key, const char *const value)
 {
    size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + strlen(value) + char_size(STRING) - char_size("%s") - char_size("%s");
-   return (jsonHandle->size + size <= jsonHandle->rootSize + 1);
+   return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
 static bool IntFits(json_t *const jsonHandle, const char *const key, const int value)
 {
    size_t valueSize = GetNumDigits(value);
    size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + valueSize + char_size(NUMBER) - char_size("%s") - char_size("%d");
-   return (jsonHandle->size + size <= jsonHandle->rootSize + 1);
+   return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
 static bool BooleanFits(json_t *const jsonHandle, const char *const key, bool value)
 {
    size_t valueSize = strlen(value ? BOOLEAN_TRUE : BOOLEAN_FALSE);
    size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + valueSize + char_size(BOOLEAN) - char_size("%s") - char_size("%s");
-   return (jsonHandle->size + size <= jsonHandle->rootSize + 1);
+   return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
 static bool ArrayIntFits(json_t *const jsonHandle, const char *const key, const int *const array, const int size)
@@ -405,7 +396,7 @@ static bool ArrayIntFits(json_t *const jsonHandle, const char *const key, const 
    }
    total -= ARRAY_TRIM;
    total += char_size(ARRAY_END);
-   return (jsonHandle->size + total <= jsonHandle->rootSize + 1);
+   return (jsonHandle->size + total <= jsonHandle->rootSize);
 }
 
 static bool ArrayStringFits(json_t *const jsonHandle, const char *const key, char **array, const int size)
@@ -418,14 +409,14 @@ static bool ArrayStringFits(json_t *const jsonHandle, const char *const key, cha
    }
    total -= ARRAY_TRIM;
    total += char_size(ARRAY_END);
-   return (jsonHandle->size + total <= jsonHandle->rootSize + 1);
+   return (jsonHandle->size + total <= jsonHandle->rootSize);
 }
 
 static bool ObjectFits(json_t *const jsonHandle, const char *const key)
 {
    size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(OBJECT_KEY) - char_size("%s");
    size += strlen(jsonHandle->newLine) + jsonHandle->depth + (char_size(OBJECT_END) - 1); // Closing bracket
-   return (jsonHandle->size + size <= jsonHandle->rootSize + 1);
+   return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
 //------------------------------------------------------------------------------
