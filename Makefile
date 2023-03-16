@@ -21,7 +21,7 @@ endif
 
 #rules
 .PHONY: all
-all: main
+all: format main
 	@echo "Done!"
 
 main: $(OBJ) main.c
@@ -39,5 +39,10 @@ main: $(OBJ) main.c
 clean:
 	rm -f *.o main
 	@echo "Everything Clean!"
+
+.PHONY: format
+format:
+	@clang-format --style=file -i *.c *.h
+	@echo "$(JAZZ)Formatted!$(RESET)"
 
 

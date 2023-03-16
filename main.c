@@ -31,7 +31,7 @@
 int main(int argc, char *argv[])
 {
 
-   char root[210] = {0};
+   char root[318] = {0};
 
    json_t json = {
        .root = root,
@@ -75,7 +75,6 @@ int main(int argc, char *argv[])
    kJSON_ExitRoot(jsonHandle);
 
    printf("%s\r\n", json.root);
-   printf("sizeof(root) = %ld\r\n", json.size);
 
-   return (json.size == 316) ? 1 : 0;
+   return (json.size == 318) ? 0 : 1;
 }
