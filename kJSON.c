@@ -38,15 +38,15 @@
 #define OBJECT_KEY         ("\"%s\":{")
 #define OBJECT_END         ("},")
 #else
-#define STRING             ("\"%s\": \"%s\",")
-#define NUMBER             ("\"%s\": %d,")
-#define BOOLEAN            ("\"%s\": %s,")
-#define ARRAY_KEY          ("\"%s\": [ ")
+#define STRING             ("\"%s\":\t\"%s\",")
+#define NUMBER             ("\"%s\":\t%d,")
+#define BOOLEAN            ("\"%s\":\t%s,")
+#define ARRAY_KEY          ("\"%s\":\t[")
 #define ARRAY_VALUE_STRING ("\"%s\", ")
 #define ARRAY_VALUE_NUMBER ("%d, ")
-#define ARRAY_END          (" ],")
+#define ARRAY_END          ("],")
 #define ARRAY_TRIM         (char_size(", "))
-#define OBJECT_KEY         ("\"%s\": {")
+#define OBJECT_KEY         ("\"%s\":\t{")
 #define OBJECT_END         ("},")
 #endif // CONFIG_KJSON_SMALLEST
 
