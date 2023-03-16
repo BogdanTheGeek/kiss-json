@@ -27,27 +27,29 @@
 #define BOOLEAN_FALSE ("false")
 
 #if CONFIG_KJSON_SMALLEST
-#define STRING             ("\"%s\":\"%s\",")
-#define NUMBER             ("\"%s\":%d,")
-#define BOOLEAN            ("\"%s\":%s,")
-#define ARRAY_KEY          ("\"%s\":[")
-#define ARRAY_VALUE_STRING ("\"%s\",")
-#define ARRAY_VALUE_NUMBER ("%d,")
-#define ARRAY_END          ("],")
-#define ARRAY_TRIM         (char_size(","))
-#define OBJECT_KEY         ("\"%s\":{")
-#define OBJECT_END         ("},")
+#define STRING               ("\"%s\":\"%s\",")
+#define NUMBER               ("\"%s\":%d,")
+#define BOOLEAN              ("\"%s\":%s,")
+#define ARRAY_KEY            ("\"%s\":[")
+#define ARRAY_VALUE_STRING   ("\"%s\",")
+#define ARRAY_VALUE_NUMBER   ("%d,")
+#define ARRAY_VALUE_UNSIGNED ("%u,")
+#define ARRAY_END            ("],")
+#define ARRAY_TRIM           (char_size(","))
+#define OBJECT_KEY           ("\"%s\":{")
+#define OBJECT_END           ("},")
 #else
-#define STRING             ("\"%s\":\t\"%s\",")
-#define NUMBER             ("\"%s\":\t%d,")
-#define BOOLEAN            ("\"%s\":\t%s,")
-#define ARRAY_KEY          ("\"%s\":\t[")
-#define ARRAY_VALUE_STRING ("\"%s\", ")
-#define ARRAY_VALUE_NUMBER ("%d, ")
-#define ARRAY_END          ("],")
-#define ARRAY_TRIM         (char_size(", "))
-#define OBJECT_KEY         ("\"%s\":\t{")
-#define OBJECT_END         ("},")
+#define STRING               ("\"%s\":\t\"%s\",")
+#define NUMBER               ("\"%s\":\t%d,")
+#define BOOLEAN              ("\"%s\":\t%s,")
+#define ARRAY_KEY            ("\"%s\":\t[")
+#define ARRAY_VALUE_STRING   ("\"%s\", ")
+#define ARRAY_VALUE_NUMBER   ("%d, ")
+#define ARRAY_VALUE_UNSIGNED ("%u, ")
+#define ARRAY_END            ("],")
+#define ARRAY_TRIM           (char_size(", "))
+#define OBJECT_KEY           ("\"%s\":\t{")
+#define OBJECT_END           ("},")
 #endif // CONFIG_KJSON_SMALLEST
 
 //------------------------------------------------------------------------------
@@ -62,6 +64,12 @@
 // Module type definitions
 //------------------------------------------------------------------------------
 
+typedef enum
+{
+   eUnsigned = 0,
+   eSigned = 1,
+} NumberType_e;
+
 //------------------------------------------------------------------------------
 // Module static variables
 //------------------------------------------------------------------------------
@@ -73,9 +81,11 @@ static int InsertString(char *const string, const char *const key, const char *c
 
 static int InsertNumber(char *const string, const char *const key, const int value);
 
+static int InsertUnsignedNumber(char *const string, const char *const key, const unsigned int value);
+
 static int InsertBoolean(char *const string, const char *const key, bool value);
 
-static int InsertArrayInt(char *const string, const char *const key, const int *const array, const int size);
+static int InsertArrayNumber(char *const string, const char *const key, const void *const array, const int size, const NumberType_e type);
 
 static int InsertArrayString(char *const string, const char *const key, char **array, const int size);
 
@@ -93,15 +103,15 @@ static int InsertDepth(char *const string, const char *const newLine, int depth)
 
 static void StartEntry(json_t *const jsonHandle);
 
-static int GetNumDigits(const int value);
+static int GetNumDigits(const void *const value, const NumberType_e type);
 
 static bool StringFits(json_t *const jsonHandle, const char *const key, const char *const value);
 
-static bool IntFits(json_t *const jsonHandle, const char *const key, const int value);
+static bool NumberFits(json_t *const jsonHandle, const char *const key, const int value, const NumberType_e type);
 
 static bool BooleanFits(json_t *const jsonHandle, const char *const key, bool value);
 
-static bool ArrayIntFits(json_t *const jsonHandle, const char *const key, const int *const array, const int size);
+static bool ArrayNumberFits(json_t *const jsonHandle, const char *const key, const void *const array, const int size, const NumberType_e type);
 
 static bool ArrayStringFits(json_t *const jsonHandle, const char *const key, char **array, const int size);
 
@@ -127,10 +137,25 @@ void kJSON_InsertString(json_t *const jsonHandle, const char *const key, const c
 
 void kJSON_InsertNumber(json_t *const jsonHandle, const char *const key, const int value)
 {
-   if (IntFits(jsonHandle, key, value))
+   if (NumberFits(jsonHandle, key, value, eSigned))
    {
       StartEntry(jsonHandle);
       size_t bytes = InsertNumber(jsonHandle->tail, key, value);
+      jsonHandle->size += bytes;
+      jsonHandle->tail += bytes;
+   }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
+}
+
+void kJSON_InsertUnsignedNumber(json_t *const jsonHandle, const char *const key, const unsigned int value)
+{
+   if (NumberFits(jsonHandle, key, value, eUnsigned))
+   {
+      StartEntry(jsonHandle);
+      size_t bytes = InsertUnsignedNumber(jsonHandle->tail, key, value);
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
    }
@@ -157,10 +182,25 @@ void kJSON_InsertBoolean(json_t *const jsonHandle, const char *const key, bool v
 
 void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const int *const array, const int size)
 {
-   if (ArrayIntFits(jsonHandle, key, array, size))
+   if (ArrayNumberFits(jsonHandle, key, array, size, eSigned))
    {
       StartEntry(jsonHandle);
-      size_t bytes = InsertArrayInt(jsonHandle->tail, key, array, size);
+      size_t bytes = InsertArrayNumber(jsonHandle->tail, key, array, size, eSigned);
+      jsonHandle->size += bytes;
+      jsonHandle->tail += bytes;
+   }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
+}
+
+void kJSON_InsertArrayUInt(json_t *const jsonHandle, const char *const key, const unsigned int *const array, const int size)
+{
+   if (ArrayNumberFits(jsonHandle, key, array, size, eUnsigned))
+   {
+      StartEntry(jsonHandle);
+      size_t bytes = InsertArrayNumber(jsonHandle->tail, key, array, size, eUnsigned);
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
    }
@@ -261,6 +301,14 @@ static int InsertNumber(char *const string, const char *const key, const int val
    return end - start;
 }
 
+static int InsertUnsignedNumber(char *const string, const char *const key, const unsigned int value)
+{
+   char *start = string;
+   char *end = start;
+   end += sprintf(end, NUMBER, key, value);
+   return end - start;
+}
+
 static int InsertBoolean(char *const string, const char *const key, bool value)
 {
    char *start = string;
@@ -269,14 +317,22 @@ static int InsertBoolean(char *const string, const char *const key, bool value)
    return end - start;
 }
 
-static int InsertArrayInt(char *const string, const char *const key, const int *const array, const int size)
+static int InsertArrayNumber(char *const string, const char *const key, const void *const array, const int size, const NumberType_e type)
 {
    char *start = string;
    char *end = start;
+   char *format = (eSigned == type) ? ARRAY_VALUE_NUMBER : ARRAY_VALUE_UNSIGNED;
    end += sprintf(end, ARRAY_KEY, key);
    for (int i = 0; i < size; i++)
    {
-      end += sprintf(end, ARRAY_VALUE_NUMBER, array[i]);
+      if (eSigned == type)
+      {
+         end += sprintf(end, format, ((int *)array)[i]);
+      }
+      else
+      {
+         end += sprintf(end, format, ((unsigned int *)array)[i]);
+      }
    }
    end -= ARRAY_TRIM;
    end += sprintf(end, ARRAY_END);
@@ -371,10 +427,18 @@ static void StartEntry(json_t *const jsonHandle)
    jsonHandle->tail += bytes;
 }
 
-static int GetNumDigits(const int value)
+static int GetNumDigits(const void *const value, const NumberType_e type)
 {
    int count = 1;
-   int num = value;
+   long long num = 0;
+   if (eSigned == type)
+   {
+      num = *(int *)value;
+   }
+   else
+   {
+      num = *(unsigned int *)value;
+   }
    if (num)
    {
       count = 0;
@@ -383,7 +447,7 @@ static int GetNumDigits(const int value)
          num /= 10;
          count++;
       }
-      if (value < 0)
+      if ((eSigned == type) && (*(int *)value < 0))
       {
          count++;
       }
@@ -397,9 +461,9 @@ static bool StringFits(json_t *const jsonHandle, const char *const key, const ch
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
-static bool IntFits(json_t *const jsonHandle, const char *const key, const int value)
+static bool NumberFits(json_t *const jsonHandle, const char *const key, const int value, const NumberType_e type)
 {
-   size_t valueSize = GetNumDigits(value);
+   size_t valueSize = GetNumDigits(&value, type);
    size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + valueSize + char_size(NUMBER) - char_size("%s") - char_size("%d");
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
@@ -411,12 +475,22 @@ static bool BooleanFits(json_t *const jsonHandle, const char *const key, bool va
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
-static bool ArrayIntFits(json_t *const jsonHandle, const char *const key, const int *const array, const int size)
+static bool ArrayNumberFits(json_t *const jsonHandle, const char *const key, const void *const array, const int size, const NumberType_e type)
 {
    size_t total = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(ARRAY_KEY) - char_size("%s");
    for (int i = 0; i < size; i++)
    {
-      size_t valueSize = GetNumDigits(array[i]);
+      size_t valueSize = 0;
+      if (eSigned == type)
+      {
+         int num = *((int *)array + sizeof(int) * i);
+         valueSize = GetNumDigits(&num, type);
+      }
+      else
+      {
+         unsigned int num = *((unsigned int *)array + sizeof(unsigned int) * i);
+         valueSize = GetNumDigits(&num, type);
+      }
       total += valueSize + char_size(ARRAY_VALUE_NUMBER) - char_size("%d");
    }
    total -= ARRAY_TRIM;

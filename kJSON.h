@@ -49,6 +49,8 @@ void kJSON_InsertBoolean(json_t *const jsonHandle, const char *const key, const 
 
 void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const int *const array, const int size);
 
+void kJSON_InsertArrayUInt(json_t *const jsonHandle, const char *const key, const unsigned int *const array, const int size);
+
 void kJSON_InsertArrayString(json_t *const jsonHandle, const char *const key, char **array, const int size);
 
 void kJSON_InitRoot(json_t *const jsonHandle);
