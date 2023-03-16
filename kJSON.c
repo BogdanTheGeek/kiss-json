@@ -119,6 +119,10 @@ void kJSON_InsertString(json_t *const jsonHandle, const char *const key, const c
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
    }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
 }
 
 void kJSON_InsertNumber(json_t *const jsonHandle, const char *const key, const int value)
@@ -129,6 +133,10 @@ void kJSON_InsertNumber(json_t *const jsonHandle, const char *const key, const i
       size_t bytes = InsertNumber(jsonHandle->tail, key, value);
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
+   }
+   else
+   {
+      jsonHandle->truncated = true;
    }
 }
 
@@ -141,6 +149,10 @@ void kJSON_InsertBoolean(json_t *const jsonHandle, const char *const key, bool v
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
    }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
 }
 
 void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const int *const array, const int size)
@@ -152,6 +164,10 @@ void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
    }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
 }
 
 void kJSON_InsertArrayString(json_t *const jsonHandle, const char *const key, char **array, const int size)
@@ -162,6 +178,11 @@ void kJSON_InsertArrayString(json_t *const jsonHandle, const char *const key, ch
       size_t bytes = InsertArrayString(jsonHandle->tail, key, array, size);
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
+   }
+   else
+   {
+      jsonHandle->truncated = true;
+      printf("ArrayIntFits failed: %s: %s\n", __FUNCTION__, key);
    }
 }
 
@@ -201,6 +222,10 @@ void kJSON_EnterObject(json_t *const jsonHandle, const char *const key)
 #if !CONFIG_KJSON_SMALLEST
       jsonHandle->depth++;
 #endif
+   }
+   else
+   {
+      jsonHandle->truncated = true;
    }
 }
 

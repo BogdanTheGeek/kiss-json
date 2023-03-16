@@ -35,6 +35,7 @@ typedef struct
    size_t size;
    int depth;
    const char *newLine;
+   bool truncated;
 } json_t;
 
 //------------------------------------------------------------------------------

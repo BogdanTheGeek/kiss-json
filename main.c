@@ -10,28 +10,16 @@
 
 #include "kJSON.h"
 
-/*
- * JSON example:
- * {
- *  "name": "Bogdan",
- *  "age": 23,
- *  "address":
- *   {
- *    "street": "Strada",
- *    "number": 23
- *   },
- *  "friends": [ "Ion", "Gheorghe", "Vasile" ],
- *  "favoriteNumbers": [ 1, 2, 3, 4, 5 ],
- *  "isMarried": false,
- * }
- */
-
 #define array_size(array) (sizeof(array) / sizeof(array[0]))
 
 int main(int argc, char *argv[])
 {
 
-   char root[318] = {0};
+#if !CONFIG_KJSON_SMALLEST
+   char root[752] = {0};
+#else
+   char root[636] = {0};
+#endif
 
    json_t json = {
        .root = root,
@@ -39,42 +27,64 @@ int main(int argc, char *argv[])
        .tail = root,
        .size = 0,
        .depth = 0,
-       .newLine = "\r\n",
+       .newLine = "\n\r",
+       .truncated = false,
    };
    json_t *jsonHandle = &json;
 
-   int favouriteNumbers[] = {1, 2, 3, 4, 5};
-   char *friends[] = {"Ion", "Gheorghe", "Vasile"};
+   //int count = 1000000;
+   int count = 1;
 
-   kJSON_InitRoot(jsonHandle);
+   while (count--)
    {
-      kJSON_InsertString(jsonHandle, "name", "Bogdan");
-      kJSON_InsertNumber(jsonHandle, "age", 23);
-      kJSON_EnterObject(jsonHandle, "address");
+      kJSON_InitRoot(jsonHandle);
+
+      int hs[] = {1, 0, 0};
+      int rs[] = {1, 1, 2, 3, 5, 16666};
+
+#if 1
+      kJSON_InsertArrayInt(jsonHandle, "hs", hs, array_size(hs));
+
+      kJSON_InsertArrayInt(jsonHandle, "rs", rs, array_size(rs));
+
+      kJSON_EnterObject(jsonHandle, "debug_heatcontroller");
       {
-         kJSON_InsertString(jsonHandle, "street", "Strada");
-         kJSON_InsertNumber(jsonHandle, "number", 23);
-         kJSON_EnterObject(jsonHandle, "address2");
-         {
-            kJSON_InsertString(jsonHandle, "street", "Strada");
-            kJSON_InsertNumber(jsonHandle, "number", -23);
-            kJSON_ExitObject(jsonHandle);
-         }
-         kJSON_EnterObject(jsonHandle, "address3");
-         {
-            kJSON_InsertString(jsonHandle, "street", "Strada");
-            kJSON_InsertNumber(jsonHandle, "number", 23);
-            kJSON_ExitObject(jsonHandle);
-         }
-         kJSON_ExitObject(jsonHandle);
+
+         kJSON_InsertString(jsonHandle, "hubtimeStr", ("Tuesday the 21st of April 2023 at 21:59"));
+         kJSON_InsertNumber(jsonHandle, "hubtimeUnix", (1699323));
+         kJSON_InsertNumber(jsonHandle, "suspended", (true));
+         kJSON_InsertNumber(jsonHandle, "controlRunning", (false));
+         kJSON_InsertNumber(jsonHandle, "timeSlot", (31));
+         kJSON_InsertString(jsonHandle, "controlsStartTimeStr", ("Tuesday the 21st of April 2023 at 21:59"));
+         kJSON_InsertNumber(jsonHandle, "controlsStartTimeUnix", (1620200));
+         kJSON_InsertNumber(jsonHandle, "secondsSinceLastAlgoRun", (160432));
+         kJSON_InsertNumber(jsonHandle, "numberOfZones", (2));
+         kJSON_InsertNumber(jsonHandle, "heatingOn", (false));
+         kJSON_InsertNumber(jsonHandle, "dhwOn", (true));
+         kJSON_InsertNumber(jsonHandle, "zone1On", (true));
+         kJSON_InsertNumber(jsonHandle, "zone2On", (true));
+         kJSON_InsertNumber(jsonHandle, "zone1Temp", (320));
+         kJSON_InsertNumber(jsonHandle, "zone2Temp", (120));
+         kJSON_InsertNumber(jsonHandle, "zone1Setpoint", (-1));
+         kJSON_InsertNumber(jsonHandle, "zone2Setpoint", (123));
+         kJSON_InsertNumber(jsonHandle, "dhwSetpoint", (222));
+         kJSON_InsertNumber(jsonHandle, "flowSetpoint", (450));
+         kJSON_InsertNumber(jsonHandle, "mode", (1));
+         kJSON_InsertNumber(jsonHandle, "manualOverrideState", (0));
+         kJSON_InsertNumber(jsonHandle, "manualOverrideHeatRemainingMs", (231312));
+         kJSON_InsertNumber(jsonHandle, "manualOverrideDHWRemainingMs", (323123));
+         kJSON_InsertNumber(jsonHandle, "secondsSinceLastControlTime", (2312));
       }
-      kJSON_InsertArrayString(jsonHandle, "friends", friends, array_size(friends));
-      kJSON_InsertArrayInt(jsonHandle, "favouriteNumbers", favouriteNumbers, array_size(favouriteNumbers));
-      kJSON_InsertBoolean(jsonHandle, "isMarried", false);
+      kJSON_ExitObject(jsonHandle);
+#endif
+
+      kJSON_ExitRoot(jsonHandle);
+
+      printf("%s\r\n", json.root);
+      printf("size: %d\r\n", json.size);
+      printf("truncated: %d\r\n", json.truncated);
+      json.tail = json.root;
+      json.size = 0;
    }
-   kJSON_ExitRoot(jsonHandle);
-
-   printf("%s\r\n", json.root);
-
-   return (json.size == 318) ? 0 : 1;
+   return 0;
 }
