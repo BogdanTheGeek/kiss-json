@@ -49,11 +49,11 @@ void kJSON_InsertUnsignedNumber(json_t *const jsonHandle, const char *const key,
 
 void kJSON_InsertBoolean(json_t *const jsonHandle, const char *const key, const bool value);
 
-void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const int *const array, const int size);
+void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const int *const array, const size_t size);
 
-void kJSON_InsertArrayUInt(json_t *const jsonHandle, const char *const key, const unsigned int *const array, const int size);
+void kJSON_InsertArrayUInt(json_t *const jsonHandle, const char *const key, const unsigned int *const array, const size_t size);
 
-void kJSON_InsertArrayString(json_t *const jsonHandle, const char *const key, char **array, const int size);
+void kJSON_InsertArrayString(json_t *const jsonHandle, const char *const key, char **array, const size_t size);
 
 void kJSON_InitRoot(json_t *const jsonHandle);
 

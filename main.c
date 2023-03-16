@@ -32,8 +32,11 @@ int main(int argc, char *argv[])
    };
    json_t *jsonHandle = &json;
 
-   //int count = 1000000;
+#if TEST
+   int count = 1000000;
+#else
    int count = 1;
+#endif
 
    while (count--)
    {
@@ -78,9 +81,11 @@ int main(int argc, char *argv[])
 
       kJSON_ExitRoot(jsonHandle);
 
+#if !TEST
       printf("%s\r\n", json.root);
       printf("size: %zu\r\n", json.size);
       printf("truncated: %d\r\n", json.truncated);
+#endif
       json.tail = json.root;
       json.size = 0;
    }
