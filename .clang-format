@@ -1,0 +1,24 @@
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 3
+TabWidth: 3
+BreakBeforeBraces: Custom
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: true
+ColumnLimit: 0
+AccessModifierOffset: -3
+NamespaceIndentation: All
+AlignConsecutiveMacros: true
+BraceWrapping:
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: true
+  AfterStruct:     true
+  AfterUnion:      true
+  BeforeCatch:     true
+  BeforeElse:      true
+  IndentBraces:    false
+SortIncludes: true
