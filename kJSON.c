@@ -29,6 +29,7 @@
 #if CONFIG_KJSON_SMALLEST
 #define STRING               ("\"%s\":\"%s\",")
 #define NUMBER               ("\"%s\":%d,")
+#define UNSIGNED             ("\"%s\":%u,")
 #define BOOLEAN              ("\"%s\":%s,")
 #define ARRAY_KEY            ("\"%s\":[")
 #define ARRAY_VALUE_STRING   ("\"%s\",")
@@ -41,6 +42,7 @@
 #else
 #define STRING               ("\"%s\":\t\"%s\",")
 #define NUMBER               ("\"%s\":\t%d,")
+#define UNSIGNED             ("\"%s\":\t%u,")
 #define BOOLEAN              ("\"%s\":\t%s,")
 #define ARRAY_KEY            ("\"%s\":\t[")
 #define ARRAY_VALUE_STRING   ("\"%s\", ")
@@ -107,7 +109,7 @@ static int GetNumDigits(const void *const value, const NumberType_e type);
 
 static bool StringFits(json_t *const jsonHandle, const char *const key, const char *const value);
 
-static bool NumberFits(json_t *const jsonHandle, const char *const key, const int value, const NumberType_e type);
+static bool NumberFits(json_t *const jsonHandle, const char *const key, const void *const value, const NumberType_e type);
 
 static bool BooleanFits(json_t *const jsonHandle, const char *const key, bool value);
 
@@ -137,7 +139,7 @@ void kJSON_InsertString(json_t *const jsonHandle, const char *const key, const c
 
 void kJSON_InsertNumber(json_t *const jsonHandle, const char *const key, const int value)
 {
-   if (NumberFits(jsonHandle, key, value, eSigned))
+   if (NumberFits(jsonHandle, key, &value, eSigned))
    {
       StartEntry(jsonHandle);
       size_t bytes = InsertNumber(jsonHandle->tail, key, value);
@@ -152,7 +154,7 @@ void kJSON_InsertNumber(json_t *const jsonHandle, const char *const key, const i
 
 void kJSON_InsertUnsignedNumber(json_t *const jsonHandle, const char *const key, const unsigned int value)
 {
-   if (NumberFits(jsonHandle, key, value, eUnsigned))
+   if (NumberFits(jsonHandle, key, &value, eUnsigned))
    {
       StartEntry(jsonHandle);
       size_t bytes = InsertUnsignedNumber(jsonHandle->tail, key, value);
@@ -305,7 +307,7 @@ static int InsertUnsignedNumber(char *const string, const char *const key, const
 {
    char *start = string;
    char *end = start;
-   end += sprintf(end, NUMBER, key, value);
+   end += sprintf(end, UNSIGNED, key, value);
    return end - start;
 }
 
@@ -461,9 +463,9 @@ static bool StringFits(json_t *const jsonHandle, const char *const key, const ch
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
-static bool NumberFits(json_t *const jsonHandle, const char *const key, const int value, const NumberType_e type)
+static bool NumberFits(json_t *const jsonHandle, const char *const key, const void *const value, const NumberType_e type)
 {
-   size_t valueSize = GetNumDigits(&value, type);
+   size_t valueSize = GetNumDigits(value, type);
    size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + valueSize + char_size(NUMBER) - char_size("%s") - char_size("%d");
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
@@ -483,12 +485,12 @@ static bool ArrayNumberFits(json_t *const jsonHandle, const char *const key, con
       size_t valueSize = 0;
       if (eSigned == type)
       {
-         int num = *((int *)array + sizeof(int) * i);
+         int num = *((int *)array + i);
          valueSize = GetNumDigits(&num, type);
       }
       else
       {
-         unsigned int num = *((unsigned int *)array + sizeof(unsigned int) * i);
+         unsigned int num = *((unsigned int *)array + i);
          valueSize = GetNumDigits(&num, type);
       }
       total += valueSize + char_size(ARRAY_VALUE_NUMBER) - char_size("%d");

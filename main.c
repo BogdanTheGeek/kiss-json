@@ -39,10 +39,9 @@ int main(int argc, char *argv[])
    {
       kJSON_InitRoot(jsonHandle);
 
-      int hs[] = {1, 0, 0};
+      int hs[] = {1, 2, 9};
       int rs[] = {1, 1, 2, 3, 5, 16666};
 
-#if 1
       kJSON_InsertArrayInt(jsonHandle, "hs", hs, array_size(hs));
 
       kJSON_InsertArrayInt(jsonHandle, "rs", rs, array_size(rs));
@@ -76,12 +75,11 @@ int main(int argc, char *argv[])
          kJSON_InsertNumber(jsonHandle, "secondsSinceLastControlTime", (2312));
       }
       kJSON_ExitObject(jsonHandle);
-#endif
 
       kJSON_ExitRoot(jsonHandle);
 
       printf("%s\r\n", json.root);
-      printf("size: %d\r\n", json.size);
+      printf("size: %zu\r\n", json.size);
       printf("truncated: %d\r\n", json.truncated);
       json.tail = json.root;
       json.size = 0;
