@@ -12,7 +12,11 @@ Features:
  - alerts the user if a key was skiped (not enough room in buffer)
  - MIT licence
 
- ## Example:
+## Versioning
+
+Versions follow the standard [Semantic Versioning](https://en.wikipedia.org/wiki/Software_versioning#Semantic_versioning) system.
+
+## Example:
 
 For a fully working example, check `main.c`.
 
@@ -52,7 +56,7 @@ For a fully working example, check `main.c`.
 
    kJSON_ExitRoot(jsonHandle);
 
-   if (jsonHandle->truncate)
+   if (jsonHandle->truncated)
    {
       printf("some keys did not fit, but the json is still valid");
    }
