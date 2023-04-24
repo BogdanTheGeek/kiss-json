@@ -36,32 +36,32 @@ typedef struct
    int depth;
    const char *newLine;
    bool truncated;
-} json_t;
+} kjson_t;
 
 //------------------------------------------------------------------------------
 // Module exported functions
 //------------------------------------------------------------------------------
-void kJSON_InsertString(json_t *const jsonHandle, const char *const key, const char *const value);
+void kJSON_InsertString(kjson_t *const jsonHandle, const char *const key, const char *const value);
 
-void kJSON_InsertNumber(json_t *const jsonHandle, const char *const key, const int value);
+void kJSON_InsertNumber(kjson_t *const jsonHandle, const char *const key, const int value);
 
-void kJSON_InsertUnsignedNumber(json_t *const jsonHandle, const char *const key, const unsigned int value);
+void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key, const unsigned int value);
 
-void kJSON_InsertBoolean(json_t *const jsonHandle, const char *const key, const bool value);
+void kJSON_InsertBoolean(kjson_t *const jsonHandle, const char *const key, const bool value);
 
-void kJSON_InsertArrayInt(json_t *const jsonHandle, const char *const key, const int *const array, const size_t size);
+void kJSON_InsertArrayInt(kjson_t *const jsonHandle, const char *const key, const int *const array, const size_t size);
 
-void kJSON_InsertArrayUInt(json_t *const jsonHandle, const char *const key, const unsigned int *const array, const size_t size);
+void kJSON_InsertArrayUInt(kjson_t *const jsonHandle, const char *const key, const unsigned int *const array, const size_t size);
 
-void kJSON_InsertArrayString(json_t *const jsonHandle, const char *const key, char **array, const size_t size);
+void kJSON_InsertArrayString(kjson_t *const jsonHandle, const char *const key, char **array, const size_t size);
 
-void kJSON_InitRoot(json_t *const jsonHandle);
+void kJSON_InitRoot(kjson_t *const jsonHandle);
 
-void kJSON_ExitRoot(json_t *const jsonHandle);
+void kJSON_ExitRoot(kjson_t *const jsonHandle);
 
-void kJSON_EnterObject(json_t *const jsonHandle, const char *const key);
+void kJSON_EnterObject(kjson_t *const jsonHandle, const char *const key);
 
-void kJSON_ExitObject(json_t *const jsonHandle);
+void kJSON_ExitObject(kjson_t *const jsonHandle);
 
 //------------------------------------------------------------------------------
 // Module exported variables

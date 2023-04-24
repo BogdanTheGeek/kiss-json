@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
    char root[636] = {0};
 #endif
 
-   json_t json = {
+   kjson_t json = {
        .root = root,
        .rootSize = sizeof(root),
        .tail = root,
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
        .newLine = "\n\r",
        .truncated = false,
    };
-   json_t *jsonHandle = &json;
+   kjson_t *jsonHandle = &json;
 
 #if TEST
    int count = 1000000;

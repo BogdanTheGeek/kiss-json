@@ -19,7 +19,7 @@ For a fully working example, check `main.c`.
 ```C
    char root[1024] = {0};
 
-   json_t json = {
+   kjson_t json = {
        .root = root,
        .rootSize = sizeof(root),
        .tail = root,
@@ -28,7 +28,7 @@ For a fully working example, check `main.c`.
        .newLine = "\n\r",
        .truncated = false,
    };
-   json_t *jsonHandle = &json;
+   kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
 
