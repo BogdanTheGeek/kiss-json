@@ -5,6 +5,12 @@ SRC:=$(wildcard *.c)
 OBJ:=$(patsubst %.c,%.o,$(SRC))
 OBJ:= $(filter-out main.o,$(OBJ))
 
+ifeq ($(shell uname -s),Darwin)
+	MEMCHECK := leaks --atExit --
+else
+	MEMCHECK := valgrind --leak-check=full --show-leak-kinds=all
+endif
+
 # define standard colors
 ifneq (,$(findstring 256color,${TERM}))
 	FAIL    := $(shell tput -Txterm setaf 1)
@@ -34,6 +40,16 @@ main: $(OBJ) main.c
 	@$(CC) -o $@ -c $< $(CFLAGS)
 	@echo "$(SUCCESS)$@: done!$(RESET)"
 
+.PHONY: test
+test: main
+	@chmod +x $<
+	@./$< && echo "$(SUCCESS) PASS!$(RESET)" || echo "$(ERROR) FAIL!$(RESET) For more details, run:\r\n./$<"
+
+.PHONY: memcheck
+memcheck: main
+	@printf "$(INFO)Memcheck $(TEST_NAME): $(RESET)"
+	@chmod +x $<
+	@$(MEMCHECK) ./$< &>/dev/null && echo "$(SUCCESS) PASS!$(RESET)" || echo "$(ERROR) FAIL!$(RESET) For more details, run:\r\n$(MEMCHECK) ./$<"
 
 .PHONY: clean
 clean:
