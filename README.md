@@ -3,14 +3,21 @@
 K.I.S.S JSON composer library in C.
 
 Features:
- - no allocation
- - cJSON style
- - small and hackable
- - custom runtime newline
- - compile time minimisation
- - always produces valid json
- - alerts the user if a key was skiped (not enough room in buffer)
+ - No allocation
+ - CJSON style
+ - Small and hackable
+ - Custom runtime newline
+ - Handle `null` strings
+ - Custom `null` value for numbers (eg. `-999` will be replaced with `null`)
+ - Compile time minimisation
+ - Always produces valid json
+ - Alerts the user if a key was skiped (not enough room in buffer)
  - MIT licence
+
+Limitations:
+ - Key pointers are not checked
+ - No floating point support (yet)
+ - No arrays of objects (use `for` loop)
 
 ## Notes:
  - `kiss-json` is not a parser, use [jsmn](https://github.com/zserge/jsmn) for memory efficient parsing
@@ -22,24 +29,17 @@ Versions follow the standard [Semantic Versioning](https://en.wikipedia.org/wiki
 
 ## Example:
 
-For a fully working example, check `main.c`.
+For a full working example, check `main.c`.
 ```C
    char root[1024] = {0};
 
-   kjson_t json = {
-       .root = root,
-       .rootSize = sizeof(root),
-       .tail = root,
-       .size = 0,
-       .depth = 0,
-       .newLine = "\n\r",
-       .truncated = false,
-   };
+   kjson_t json = KJSON_INITIALISE(root);
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
 
    int digits[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+   const char *job = NULL;
 
    kJSON_InsertArrayInt(jsonHandle, "digits", digits, array_size(digits));
 
@@ -48,6 +48,7 @@ For a fully working example, check `main.c`.
       kJSON_EnterObject(jsonHandle, "bob");
       {
          kJSON_InsertString(jsonHandle, "name", "Bob");
+         kJSON_InsertString(jsonHandle, "job", job);
          kJSON_InsertUnsignedNumber(jsonHandle, "age", 32);
          kJSON_InsertBoolean(jsonHandle, "married", false);
          kJSON_InsertString(jsonHandle, "car", "🚗");
@@ -66,7 +67,7 @@ For a fully working example, check `main.c`.
 
 Output with `CONFIG_KJSON_SMALLEST (1)`:
 ```json
-{"digits":[0,1,2,3,4,5,6,7,8,9],"people":{"bob":{"name":"Bob","age":32,"married":false,"car":"🚗","balance":-300}}}
+{"digits":[0,1,2,3,4,5,6,7,8,9],"people":{"bob":{"name":"Bob","job":null,"age":32,"married":false,"car":"🚗","balance":-300}}}
 ```
 
 Output with `CONFIG_KJSON_SMALLEST (0)`:
@@ -76,6 +77,7 @@ Output with `CONFIG_KJSON_SMALLEST (0)`:
 "people":	{
 	"bob":	{
 		"name":	"Bob",
+		"job":	null,
 		"age":	32,
 		"married":	false,
 		"car":	"🚗",
