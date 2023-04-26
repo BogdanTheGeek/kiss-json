@@ -15,10 +15,11 @@
 int main(int argc, char *argv[])
 {
 
-#if !CONFIG_KJSON_SMALLEST
-   char root[752] = {0};
+// Buffer size should include the null terminator
+#if CONFIG_KJSON_SMALLEST
+   char root[118] = {0};
 #else
-   char root[636] = {0};
+   char root[169] = {0};
 #endif
 
    kjson_t json = {
@@ -42,40 +43,21 @@ int main(int argc, char *argv[])
    {
       kJSON_InitRoot(jsonHandle);
 
-      int hs[] = {1, 2, 9};
-      int rs[] = {1, 1, 2, 3, 5, 16666};
+      int digits[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-      kJSON_InsertArrayInt(jsonHandle, "hs", hs, array_size(hs));
+      kJSON_InsertArrayInt(jsonHandle, "digits", digits, array_size(digits));
 
-      kJSON_InsertArrayInt(jsonHandle, "rs", rs, array_size(rs));
-
-      kJSON_EnterObject(jsonHandle, "debug_heatcontroller");
+      kJSON_EnterObject(jsonHandle, "people");
       {
-
-         kJSON_InsertString(jsonHandle, "hubtimeStr", ("Tuesday the 21st of April 2023 at 21:59"));
-         kJSON_InsertNumber(jsonHandle, "hubtimeUnix", (1699323));
-         kJSON_InsertNumber(jsonHandle, "suspended", (true));
-         kJSON_InsertNumber(jsonHandle, "controlRunning", (false));
-         kJSON_InsertNumber(jsonHandle, "timeSlot", (31));
-         kJSON_InsertString(jsonHandle, "controlsStartTimeStr", ("Tuesday the 21st of April 2023 at 21:59"));
-         kJSON_InsertNumber(jsonHandle, "controlsStartTimeUnix", (1620200));
-         kJSON_InsertNumber(jsonHandle, "secondsSinceLastAlgoRun", (160432));
-         kJSON_InsertNumber(jsonHandle, "numberOfZones", (2));
-         kJSON_InsertNumber(jsonHandle, "heatingOn", (false));
-         kJSON_InsertNumber(jsonHandle, "dhwOn", (true));
-         kJSON_InsertNumber(jsonHandle, "zone1On", (true));
-         kJSON_InsertNumber(jsonHandle, "zone2On", (true));
-         kJSON_InsertNumber(jsonHandle, "zone1Temp", (320));
-         kJSON_InsertNumber(jsonHandle, "zone2Temp", (120));
-         kJSON_InsertNumber(jsonHandle, "zone1Setpoint", (-1));
-         kJSON_InsertNumber(jsonHandle, "zone2Setpoint", (123));
-         kJSON_InsertNumber(jsonHandle, "dhwSetpoint", (222));
-         kJSON_InsertNumber(jsonHandle, "flowSetpoint", (450));
-         kJSON_InsertNumber(jsonHandle, "mode", (1));
-         kJSON_InsertNumber(jsonHandle, "manualOverrideState", (0));
-         kJSON_InsertNumber(jsonHandle, "manualOverrideHeatRemainingMs", (231312));
-         kJSON_InsertNumber(jsonHandle, "manualOverrideDHWRemainingMs", (323123));
-         kJSON_InsertNumber(jsonHandle, "secondsSinceLastControlTime", (2312));
+         kJSON_EnterObject(jsonHandle, "bob");
+         {
+            kJSON_InsertString(jsonHandle, "name", "Bob");
+            kJSON_InsertUnsignedNumber(jsonHandle, "age", 32);
+            kJSON_InsertBoolean(jsonHandle, "married", false);
+            kJSON_InsertString(jsonHandle, "car", "🚗");
+            kJSON_InsertNumber(jsonHandle, "balance", -300);
+         }
+         kJSON_ExitObject(jsonHandle);
       }
       kJSON_ExitObject(jsonHandle);
 
@@ -85,6 +67,10 @@ int main(int argc, char *argv[])
       printf("%s\r\n", json.root);
       printf("size: %zu\r\n", json.size);
       printf("truncated: %d\r\n", json.truncated);
+      if (json.truncated)
+      {
+         return 1;
+      }
 #endif
       json.tail = json.root;
       json.size = 0;
