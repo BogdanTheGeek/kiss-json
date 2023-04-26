@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Implements the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.1.0
+//       Version : 1.1.1
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -137,31 +137,45 @@ void kJSON_InsertString(kjson_t *const jsonHandle, const char *const key, const 
 
 void kJSON_InsertNumber(kjson_t *const jsonHandle, const char *const key, const int value)
 {
-   if (NumberFits(jsonHandle, key, &value, eSigned))
+   if (value == jsonHandle->nullIntValue)
    {
-      StartEntry(jsonHandle);
-      size_t bytes = InsertNumber(jsonHandle->tail, key, value);
-      jsonHandle->size += bytes;
-      jsonHandle->tail += bytes;
+      kJSON_InsertNull(jsonHandle, key);
    }
    else
    {
-      jsonHandle->truncated = true;
+      if (NumberFits(jsonHandle, key, &value, eSigned))
+      {
+         StartEntry(jsonHandle);
+         size_t bytes = InsertNumber(jsonHandle->tail, key, value);
+         jsonHandle->size += bytes;
+         jsonHandle->tail += bytes;
+      }
+      else
+      {
+         jsonHandle->truncated = true;
+      }
    }
 }
 
 void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key, const unsigned int value)
 {
-   if (NumberFits(jsonHandle, key, &value, eUnsigned))
+   if (value == jsonHandle->nullUIntValue)
    {
-      StartEntry(jsonHandle);
-      size_t bytes = InsertUnsignedNumber(jsonHandle->tail, key, value);
-      jsonHandle->size += bytes;
-      jsonHandle->tail += bytes;
+      kJSON_InsertNull(jsonHandle, key);
    }
    else
    {
-      jsonHandle->truncated = true;
+      if (NumberFits(jsonHandle, key, &value, eUnsigned))
+      {
+         StartEntry(jsonHandle);
+         size_t bytes = InsertUnsignedNumber(jsonHandle->tail, key, value);
+         jsonHandle->size += bytes;
+         jsonHandle->tail += bytes;
+      }
+      else
+      {
+         jsonHandle->truncated = true;
+      }
    }
 }
 

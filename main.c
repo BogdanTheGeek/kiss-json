@@ -17,9 +17,9 @@ int main(int argc, char *argv[])
 
 // Buffer size should include the null terminator
 #if CONFIG_KJSON_SMALLEST
-   char root[204] = {0};
+   char root[223] = {0};
 #else
-   char root[261] = {0};
+   char root[284] = {0};
 #endif
 
    kjson_t json = KJSON_INITIALISE(root);
@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
          kJSON_InsertBoolean(jsonHandle, "married", false);
          kJSON_InsertString(jsonHandle, "car", "🚗");
          kJSON_InsertNumber(jsonHandle, "balance", -300);
+         kJSON_InsertNumber(jsonHandle, "temperature", null);
       }
       kJSON_ExitObject(jsonHandle);
    }
