@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Defines the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.0.0
+//       Version : 1.1.0
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -18,26 +18,54 @@ extern "C" {
 //------------------------------------------------------------------------------
 // Module includes
 //------------------------------------------------------------------------------
+#include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 
 //------------------------------------------------------------------------------
 // Module exported defines
 //------------------------------------------------------------------------------
-#define CONFIG_KJSON_SMALLEST (0)
+
+#define KJSON_VERSION_MAJOR (1)
+#define KJSON_VERSION_MINOR (1)
+#define KJSON_VERSION_PATCH (0)
+
+#define CONFIG_KJSON_SMALLEST (1)
+
+#define KJSON_INITIALISE(buffer)    \
+   {                                \
+      .root = (buffer),             \
+      .rootSize = sizeof((buffer)), \
+      .tail = (buffer),             \
+      .size = 0,                    \
+      .depth = 0,                   \
+      .newLine = "\n",              \
+      .nullIntValue = (INT_MAX),    \
+      .truncated = false            \
+   }
 
 //------------------------------------------------------------------------------
 // Module exported type definitions
 //------------------------------------------------------------------------------
 typedef struct
 {
-   char *const root;
-   const size_t rootSize;
-   char *tail;
-   size_t size;
-   int depth;
-   const char *newLine;
-   bool truncated;
+   // Initialisation parameters
+   char *const root;      // Buffer to store output
+   const size_t rootSize; // Size of the buffer
+   char *tail;            // Point to last character inserted (point to root)
+   const char *newLine;   // Character to use for new line
+   union
+   {
+      int nullIntValue;           // Value that marks a null integer
+      unsigned int nullUIntValue; // Value that marks a null unsigned integer
+   };
+
+   // Output parameters
+   size_t size;    // Size of the output
+   bool truncated; // True if some objects could not fit
+
+   // Internal parameters
+   int depth; // Used to track the depth of the JSON object
 } kjson_t;
 
 //------------------------------------------------------------------------------
@@ -81,6 +109,14 @@ void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key
 void kJSON_InsertBoolean(kjson_t *const jsonHandle, const char *const key, const bool value);
 
 /**
+ * @brief  Inserts a null into the JSON object
+ * @param  jsonHandle: JSON object handle
+ * @param  key: Key of the null
+ * @return None
+ */
+void kJSON_InsertNull(kjson_t *const jsonHandle, const char *const key);
+
+/**
  * @brief  Inserts an array of numbers into the JSON object
  * @param  jsonHandle: JSON object handle
  * @param  key: Key of the array
@@ -108,7 +144,7 @@ void kJSON_InsertArrayUInt(kjson_t *const jsonHandle, const char *const key, con
  * @param  size: Size of the array
  * @return None
  */
-void kJSON_InsertArrayString(kjson_t *const jsonHandle, const char *const key, char **array, const size_t size);
+void kJSON_InsertArrayString(kjson_t *const jsonHandle, const char *const key, const char *const *const array, const size_t size);
 
 /**
  * @brief  Inserts the root object into the JSON object
