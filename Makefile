@@ -54,6 +54,7 @@ memcheck: main
 .PHONY: clean
 clean:
 	rm -f *.o main
+	rm -rf *.dSYM
 	@echo "Everything Clean!"
 
 .PHONY: format
