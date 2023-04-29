@@ -12,7 +12,7 @@
 
 #define array_size(array) (sizeof(array) / sizeof(array[0]))
 
-int main(int argc, char *argv[])
+int main(void)
 {
 
 // Buffer size should include the null terminator

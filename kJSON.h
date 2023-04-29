@@ -65,7 +65,7 @@ typedef struct
    bool truncated; // True if some objects could not fit
 
    // Internal parameters
-   int depth; // Used to track the depth of the JSON object
+   unsigned short depth; // Used to track the depth of the JSON object
 } kjson_t;
 
 //------------------------------------------------------------------------------

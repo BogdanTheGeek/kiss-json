@@ -1,6 +1,6 @@
 CC=cc
 IDIR=./
-CFLAGS=-Wall -pedantic -I$(IDIR)
+CFLAGS :=-g -O0 -Wall -Wextra -Wmissing-declarations -Wconversion -Wshadow -Wlogical-op -Waggregate-return -Wfloat-equal -Wsuggest-attribute=const -Wunknown-warning-option -Wunused -Wuninitialized -Wno-unknown-warning-option -I$(IDIR)
 SRC:=$(wildcard *.c)
 OBJ:=$(patsubst %.c,%.o,$(SRC))
 OBJ:= $(filter-out main.o,$(OBJ))
