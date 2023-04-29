@@ -325,7 +325,7 @@ void kJSON_InitRoot(kjson_t *const jsonHandle)
    jsonHandle->size += bytes;
    jsonHandle->tail += bytes;
    // Account for closing brace
-   jsonHandle->size += strlen(jsonHandle->newLine) + (char_size(OBJECT_END) - 1);
+   jsonHandle->size += strlen(jsonHandle->newLine) + char_size("}");
 }
 
 void kJSON_ExitRoot(kjson_t *const jsonHandle)
@@ -481,19 +481,19 @@ static size_t InitRoot(char *const string)
 {
    char *const start = string;
    char *end = start;
-   end += sprintf(end, "{");
+   *(end++) = '{';
    return (size_t)(end - start);
 }
 
 static size_t Trim(char *const string)
 {
-   char *const start = string;
-   char *end = start - 1;
-   if (',' == *end++)
+   const char *const start = string;
+   const char * const end = start - 1;
+   if (',' == *end)
    {
-      end = start - char_size(",");
+      return (size_t)-1;
    }
-   return (size_t)(end - start);
+   return 0;
 }
 
 static size_t ExitRoot(char *const string)
@@ -538,7 +538,7 @@ static size_t InsertDepth(char *const string, const char *const newLine, const i
    }
    for (size_t i = 0; i < (size_t)depth; i++)
    {
-      end += sprintf(end, "\t");
+      *(end++) = '\t';
    }
    return (size_t)(end - start);
 #endif // CONFIG_KJSON_SMALLEST
@@ -669,7 +669,7 @@ static bool ArrayStringFits(kjson_t *const jsonHandle, const char *const key, co
    size_t total = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(ARRAY_KEY) - char_size("%s");
    for (size_t i = 0; i < size; i++)
    {
-      size_t valueSize = char_size(NULL_VALUE);
+      size_t valueSize = char_size(ARRAY_VALUE_NULL) - char_size("\"%s\"");
       if (array[i])
       {
          valueSize = strlen(array[i]);

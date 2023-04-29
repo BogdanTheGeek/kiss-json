@@ -1,3 +1,5 @@
-*.o
-*.dSYM
+**/*.o
+**/*.bin
+**/*.dSYM
 main
+**/.DS_Store
