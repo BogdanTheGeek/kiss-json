@@ -17,9 +17,9 @@ int main(void)
 
 // Buffer size should include the null terminator
 #if CONFIG_KJSON_SMALLEST
-   char root[223] = {0};
-#else
    char root[284] = {0};
+#else
+   char root[355] = {0};
 #endif
 
    kjson_t json = KJSON_INITIALISE(root);
@@ -35,6 +35,14 @@ int main(void)
    const char *bobsFriends[] = {"Alice", "John", "Mary", NULL, "Peter", "Paul"};
 
    kJSON_InsertArrayInt(jsonHandle, "digits", digits, array_size(digits));
+
+   kJSON_InsertFloat(jsonHandle, "pi", 3.14159265f, 2);
+
+   const float fNull = -99.0f;
+   json.nullFloatValue = fNull;
+
+   float temps[] = {12.5f, 13.2f, 14.1f, -99.0f, 16.0f, 17.0f, 18.0f};
+   kJSON_InsertArrayFloat(jsonHandle, "temps", temps, array_size(temps), 2);
 
    kJSON_EnterObject(jsonHandle, "people");
    {

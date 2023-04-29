@@ -33,12 +33,14 @@
 #define STRING               ("\"%s\":\"%s\",")
 #define NUMBER               ("\"%s\":%d,")
 #define UNSIGNED             ("\"%s\":%u,")
+#define FLOAT                ("\"%s\":%.*f,")
 #define BOOLEAN              ("\"%s\":%s,")
 #define ARRAY_KEY            ("\"%s\":[")
 #define ARRAY_VALUE_STRING   ("\"%s\",")
 #define ARRAY_VALUE_NULL     ("null,")
 #define ARRAY_VALUE_NUMBER   ("%d,")
 #define ARRAY_VALUE_UNSIGNED ("%u,")
+#define ARRAY_VALUE_FLOAT    ("%.*f,")
 #define ARRAY_END            ("],")
 #define ARRAY_TRIM           (char_size(","))
 #define OBJECT_KEY           ("\"%s\":{")
@@ -47,17 +49,25 @@
 #define STRING               ("\"%s\":\t\"%s\",")
 #define NUMBER               ("\"%s\":\t%d,")
 #define UNSIGNED             ("\"%s\":\t%u,")
+#define FLOAT                ("\"%s\":\t%.*f,")
 #define BOOLEAN              ("\"%s\":\t%s,")
 #define ARRAY_KEY            ("\"%s\":\t[")
 #define ARRAY_VALUE_STRING   ("\"%s\", ")
 #define ARRAY_VALUE_NULL     ("null, ")
 #define ARRAY_VALUE_NUMBER   ("%d, ")
 #define ARRAY_VALUE_UNSIGNED ("%u, ")
+#define ARRAY_VALUE_FLOAT    ("%.*f, ")
 #define ARRAY_END            ("],")
 #define ARRAY_TRIM           (char_size(", "))
 #define OBJECT_KEY           ("\"%s\":\t{")
 #define OBJECT_END           ("},")
 #endif // CONFIG_KJSON_SMALLEST
+
+#if !CONFIG_KJSON_NO_FLOAT
+#define FLOAT_MASK (0xFFFFFFFF)
+#define IS_FLOAT_NULL(value, nullValue) \
+   ((*(size_t *)&(value)&FLOAT_MASK) == (*(size_t *)&(nullValue)&FLOAT_MASK))
+#endif
 
 //------------------------------------------------------------------------------
 // External variables
@@ -87,11 +97,17 @@ typedef enum
 static size_t InsertString(char *const string, const char *const key, const char *const value);
 static size_t InsertNumber(char *const string, const char *const key, const int value);
 static size_t InsertUnsignedNumber(char *const string, const char *const key, const unsigned int value);
+#if !CONFIG_KJSON_NO_FLOAT
+static size_t InsertFloat(char *const string, const char *const key, const float value, const unsigned int decimals);
+#endif
 static size_t InsertBoolean(char *const string, const char *const key, bool value);
 static size_t InsertNull(char *const string, const char *const key);
 
 static size_t InsertArrayNumber(char *const string, const char *const key, const void *const array, const size_t size, const NumberType_e type, void *const nullValue);
 static size_t InsertArrayString(char *const string, const char *const key, const char *const *const array, const size_t size);
+#if !CONFIG_KJSON_NO_FLOAT
+static size_t InsertArrayFloat(char *const string, const char *const key, const float *const array, const size_t size, const unsigned int decimals, const float nullValue);
+#endif
 
 static size_t InitRoot(char *const string);
 static size_t Trim(char *const string);
@@ -104,9 +120,15 @@ static void StartEntry(kjson_t *const jsonHandle);
 static size_t GetNumDigits(const void *const value, const NumberType_e type);
 static bool StringFits(kjson_t *const jsonHandle, const char *const key, const char *const value);
 static bool NumberFits(kjson_t *const jsonHandle, const char *const key, const void *const value, const NumberType_e type);
+#if !CONFIG_KJSON_NO_FLOAT
+static bool FloatFits(kjson_t *const jsonHandle, const char *const key, const float value, const unsigned int decimals);
+#endif
 static bool BooleanFits(kjson_t *const jsonHandle, const char *const key, bool value);
 static bool NullFits(kjson_t *const jsonHandle, const char *const key);
 static bool ArrayNumberFits(kjson_t *const jsonHandle, const char *const key, const void *const array, const size_t size, const NumberType_e type);
+#if !CONFIG_KJSON_NO_FLOAT
+static bool ArrayFloatFits(kjson_t *const jsonHandle, const char *const key, const float *const array, const size_t size, const unsigned int decimals);
+#endif
 static bool ArrayStringFits(kjson_t *const jsonHandle, const char *const key, const char *const *const array, const size_t size);
 static bool ObjectFits(kjson_t *const jsonHandle, const char *const key);
 
@@ -179,6 +201,30 @@ void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key
    }
 }
 
+#if !CONFIG_KJSON_NO_FLOAT
+void kJSON_InsertFloat(kjson_t *const jsonHandle, const char *const key, const float value, const unsigned int decimals)
+{
+   if (IS_FLOAT_NULL(value, jsonHandle->nullFloatValue))
+   {
+      kJSON_InsertNull(jsonHandle, key);
+   }
+   else
+   {
+      if (FloatFits(jsonHandle, key, value, decimals))
+      {
+         StartEntry(jsonHandle);
+         const size_t bytes = InsertFloat(jsonHandle->tail, key, value, decimals);
+         jsonHandle->size += bytes;
+         jsonHandle->tail += bytes;
+      }
+      else
+      {
+         jsonHandle->truncated = true;
+      }
+   }
+}
+#endif // CONFIG_KJSON_NO_FLOAT
+
 void kJSON_InsertBoolean(kjson_t *const jsonHandle, const char *const key, bool value)
 {
    if (BooleanFits(jsonHandle, key, value))
@@ -230,6 +276,21 @@ void kJSON_InsertArrayUInt(kjson_t *const jsonHandle, const char *const key, con
    {
       StartEntry(jsonHandle);
       const size_t bytes = InsertArrayNumber(jsonHandle->tail, key, array, size, eUnsigned, &jsonHandle->nullUIntValue);
+      jsonHandle->size += bytes;
+      jsonHandle->tail += bytes;
+   }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
+}
+
+void kJSON_InsertArrayFloat(kjson_t *const jsonHandle, const char *const key, const float *const array, const size_t size, const unsigned int decimals)
+{
+   if (ArrayFloatFits(jsonHandle, key, array, size, decimals))
+   {
+      StartEntry(jsonHandle);
+      const size_t bytes = InsertArrayFloat(jsonHandle->tail, key, array, size, decimals, jsonHandle->nullFloatValue);
       jsonHandle->size += bytes;
       jsonHandle->tail += bytes;
    }
@@ -337,6 +398,16 @@ static size_t InsertUnsignedNumber(char *const string, const char *const key, co
    return (size_t)(end - start);
 }
 
+#if !CONFIG_KJSON_NO_FLOAT
+static size_t InsertFloat(char *const string, const char *const key, const float value, const unsigned int decimals)
+{
+   char *const start = string;
+   char *end = start;
+   end += sprintf(end, FLOAT, key, decimals, value);
+   return (size_t)(end - start);
+}
+#endif // CONFIG_KJSON_NO_FLOAT
+
 static size_t InsertBoolean(char *const string, const char *const key, bool value)
 {
    char *const start = string;
@@ -364,17 +435,28 @@ static size_t InsertArrayNumber(char *const string, const char *const key, const
       {
          end += sprintf(end, ARRAY_VALUE_NULL);
       }
+      else if (eSigned == type)
+      {
+         end += sprintf(end, ARRAY_VALUE_NUMBER, ((int *)array)[i]);
+      }
       else
       {
-         if (eSigned == type)
-         {
-            end += sprintf(end, ARRAY_VALUE_NUMBER, ((int *)array)[i]);
-         }
-         else
-         {
-            end += sprintf(end, ARRAY_VALUE_UNSIGNED, ((unsigned int *)array)[i]);
-         }
+         end += sprintf(end, ARRAY_VALUE_UNSIGNED, ((unsigned int *)array)[i]);
       }
+   }
+   end -= ARRAY_TRIM;
+   end += sprintf(end, ARRAY_END);
+   return (size_t)(end - start);
+}
+
+static size_t InsertArrayFloat(char *const string, const char *const key, const float *const array, const size_t size, const unsigned int decimals, const float nullValue)
+{
+   char *const start = string;
+   char *end = start;
+   end += sprintf(end, ARRAY_KEY, key);
+   for (size_t i = 0; i < size; i++)
+   {
+      end += sprintf(end, (IS_FLOAT_NULL(array[i], nullValue) ? ARRAY_VALUE_NULL : ARRAY_VALUE_FLOAT), decimals, array[i]);
    }
    end -= ARRAY_TRIM;
    end += sprintf(end, ARRAY_END);
@@ -454,7 +536,7 @@ static size_t InsertDepth(char *const string, const char *const newLine, const i
    {
       *(end++) = newLine[i];
    }
-   for (size_t i = 0; i < depth; i++)
+   for (size_t i = 0; i < (size_t)depth; i++)
    {
       end += sprintf(end, "\t");
    }
@@ -510,6 +592,16 @@ static bool NumberFits(kjson_t *const jsonHandle, const char *const key, const v
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
 
+#if !CONFIG_KJSON_NO_FLOAT
+static bool FloatFits(kjson_t *const jsonHandle, const char *const key, const float value, const unsigned int decimals)
+{
+   const int intVal = (int)value;
+   const size_t valueSize = GetNumDigits(&intVal, eSigned) + char_size(".") + decimals;
+   const size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + valueSize + char_size(FLOAT) - char_size("%s") - char_size("%.*f");
+   return (jsonHandle->size + size <= jsonHandle->rootSize);
+}
+#endif // CONFIG_KJSON_NO_FLOAT
+
 static bool BooleanFits(kjson_t *const jsonHandle, const char *const key, bool value)
 {
    const size_t valueSize = strlen(value ? BOOLEAN_TRUE : BOOLEAN_FALSE);
@@ -530,7 +622,11 @@ static bool ArrayNumberFits(kjson_t *const jsonHandle, const char *const key, co
    for (size_t i = 0; i < size; i++)
    {
       size_t valueSize = 0;
-      if (eSigned == type)
+      if (((int *)array)[i] == jsonHandle->nullIntValue)
+      {
+         valueSize = char_size(NULL_VALUE);
+      }
+      else if (eSigned == type)
       {
          const int num = *((int *)array + i);
          valueSize = GetNumDigits(&num, type);
@@ -541,6 +637,27 @@ static bool ArrayNumberFits(kjson_t *const jsonHandle, const char *const key, co
          valueSize = GetNumDigits(&num, type);
       }
       total += valueSize + char_size(ARRAY_VALUE_NUMBER) - char_size("%d");
+   }
+   total -= ARRAY_TRIM;
+   total += char_size(ARRAY_END);
+   return (jsonHandle->size + total <= jsonHandle->rootSize);
+}
+
+static bool ArrayFloatFits(kjson_t *const jsonHandle, const char *const key, const float *const array, const size_t size, const unsigned int decimals)
+{
+   size_t total = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(ARRAY_KEY) - char_size("%s");
+   for (size_t i = 0; i < size; i++)
+   {
+      if (IS_FLOAT_NULL(array[i], jsonHandle->nullFloatValue))
+      {
+         total += char_size(NULL_VALUE) + char_size(ARRAY_VALUE_FLOAT) - char_size("%.*f");
+      }
+      else
+      {
+         const int intVal = (int)array[i];
+         const size_t valueSize = GetNumDigits(&intVal, eSigned) + char_size(".") + decimals;
+         total += valueSize + char_size(ARRAY_VALUE_FLOAT) - char_size("%.*f");
+      }
    }
    total -= ARRAY_TRIM;
    total += char_size(ARRAY_END);

@@ -31,6 +31,7 @@ extern "C" {
 #define KJSON_VERSION_PATCH (1)
 
 #define CONFIG_KJSON_SMALLEST (1)
+#define CONFIG_KJSON_NO_FLOAT (0)
 
 #define KJSON_INITIALISE(buffer)    \
    {                                \
@@ -54,11 +55,12 @@ typedef struct
    const size_t rootSize; // Size of the buffer
    char *tail;            // Point to last character inserted (point to root)
    const char *newLine;   // Character to use for new line
-   union
-   {
-      int nullIntValue;           // Value that marks a null integer
-      unsigned int nullUIntValue; // Value that marks a null unsigned integer
-   };
+
+   int nullIntValue;           // Value that marks a null integer
+   unsigned int nullUIntValue; // Value that marks a null unsigned integer
+#if !CONFIG_KJSON_NO_FLOAT
+   float nullFloatValue; // Value that marks a null float
+#endif
 
    // Output parameters
    size_t size;    // Size of the output
@@ -100,6 +102,16 @@ void kJSON_InsertNumber(kjson_t *const jsonHandle, const char *const key, const 
 void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key, const unsigned int value);
 
 /**
+ * @brief  Inserts a float into the JSON object
+ * @param  jsonHandle: JSON object handle
+ * @param  key: Key of the float
+ * @param  value: Value of the float
+ * @param  decimals: Number of decimals to use
+ * @return None
+ */
+void kJSON_InsertFloat(kjson_t *const jsonHandle, const char *const key, const float value, const unsigned int decimals);
+
+/**
  * @brief  Inserts a boolean into the JSON object
  * @param  jsonHandle: JSON object handle
  * @param  key: Key of the boolean
@@ -135,6 +147,17 @@ void kJSON_InsertArrayInt(kjson_t *const jsonHandle, const char *const key, cons
  * @return None
  */
 void kJSON_InsertArrayUInt(kjson_t *const jsonHandle, const char *const key, const unsigned int *const array, const size_t size);
+
+/**
+ * @brief  Inserts an array of floats into the JSON object
+ * @param  jsonHandle: JSON object handle
+ * @param  key: Key of the array
+ * @param  array: Array of floats
+ * @param  size: Size of the array
+ * @param  decimals: Number of decimals to use
+ * @return None
+ */
+void kJSON_InsertArrayFloat(kjson_t *const jsonHandle, const char *const key, const float *const array, const size_t size, const unsigned int decimals);
 
 /**
  * @brief  Inserts an array of strings into the JSON object

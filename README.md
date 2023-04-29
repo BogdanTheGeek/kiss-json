@@ -9,6 +9,7 @@ Features:
  - Custom runtime newline
  - Handle `null` strings
  - Custom `null` value for numbers (eg. `-999` will be replaced with `null`)
+ - Floating point support can be disabled
  - Compile time minimisation
  - Always produces valid json
  - Alerts the user if a key was skiped (not enough room in buffer)
@@ -16,7 +17,6 @@ Features:
 
 Limitations:
  - Key pointers are not checked
- - No floating point support (yet)
  - No arrays of objects (use `for` loop)
 
 ## Notes:
