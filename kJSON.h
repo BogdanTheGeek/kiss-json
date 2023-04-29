@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Defines the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.1.1
+//       Version : 1.2.0
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -27,8 +27,8 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 #define KJSON_VERSION_MAJOR (1)
-#define KJSON_VERSION_MINOR (1)
-#define KJSON_VERSION_PATCH (1)
+#define KJSON_VERSION_MINOR (2)
+#define KJSON_VERSION_PATCH (0)
 
 #define CONFIG_KJSON_SMALLEST (1)
 #define CONFIG_KJSON_NO_FLOAT (0)
