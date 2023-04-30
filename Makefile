@@ -8,13 +8,6 @@ OBJ:= $(filter-out test.o,$(OBJ))
 include Colour.mk
 include Flags.mk
 
-ifeq ($(shell uname -s),Darwin)
-	MEMCHECK := leaks --atExit --
-else
-	MEMCHECK := valgrind --leak-check=full --show-leak-kinds=all
-endif
-
-#rules
 .PHONY: all
 all: format main test.bin
 	@echo "Done!"
@@ -42,18 +35,14 @@ run: main
 .PHONY: test
 test: test.bin
 	@chmod +x $<
-	@./$< && echo "$(SUCCESS)PASS!$(RESET)" || echo "$(ERROR)FAIL!$(RESET) For more details, run:\r\n./$<"
-
-.PHONY: memcheck
-memcheck: main
-	@printf "$(INFO)Memcheck $(TEST_NAME): $(RESET)"
-	@chmod +x $<
-	@$(MEMCHECK) ./$< &>/dev/null && echo "$(SUCCESS)PASS!$(RESET)" || echo "$(ERROR)FAIL!$(RESET) For more details, run:\r\n$(MEMCHECK) ./$<"
+	@echo "$(WARNING)Running test: $< $(RESET)"
+	@./$< && echo "$(SUCCESS)PASS!$(RESET)" || echo "$(ERROR)FAIL!$(RESET)"
 
 .PHONY: clean
 clean:
-	rm -f *.o main test.bin
+	rm -f *.o main
 	rm -rf *.dSYM
+	rm -rf *.bin
 	@echo "Everything Clean!"
 
 .PHONY: format

@@ -16,30 +16,37 @@
 #define TEST(test) \
    if (!test)      \
    {               \
-      return 1;    \
+      result |= 1; \
    }
 
-#define CHECK_JSON_GOOD(json, expected)                               \
-   if (strcmp(json.root, expected) != 0)                              \
-   {                                                                  \
-      printf("%s failed\n", __func__);                                \
-      printf("Expected(%zu):\n%s\n", array_size(expected), expected); \
-      printf("Actual(%zu):\n%s\n", json.size, json.root);             \
-      return false;                                                   \
+#define CHECK_JSON_GOOD(json, expected)                                 \
+   if (strcmp(json.root, expected) != 0)                                \
+   {                                                                    \
+      printf("\n%s FAILED:\n", __func__);                               \
+      printf("File: ./%s:%d\n", __FILE__, __LINE__);                    \
+      printf("--------------------------------------------------\n");   \
+      printf("Expected(%zu):\n%s\n\n", array_size(expected), expected); \
+      printf("Actual(%zu):\n%s\n", json.size, json.root);               \
+      printf("--------------------------------------------------\n");   \
+      return false;                                                     \
    }
 
-#define CHECK_JSON_BAD(json, expected)                                \
-   if (strcmp(json.root, expected) == 0)                              \
-   {                                                                  \
-      printf("%s didn't fail when it should have\n", __func__);       \
-      printf("Expected(%zu):\n%s\n", array_size(expected), expected); \
-      printf("Actual(%zu):\n%s\n", json.size, json.root);             \
-      return false;                                                   \
-   }                                                                  \
-   if (json.truncated == false)                                       \
-   {                                                                  \
-      printf("%s: didn't truncate\n", __func__);                      \
-      return false;                                                   \
+#define CHECK_JSON_BAD(json, expected)                                  \
+   if (strcmp(json.root, expected) == 0)                                \
+   {                                                                    \
+      printf("\n%s didn't fail when it should have\n", __func__);       \
+      printf("File: ./%s:%d\n", __FILE__, __LINE__);                    \
+      printf("--------------------------------------------------\n");   \
+      printf("Expected(%zu):\n%s\n\n", array_size(expected), expected); \
+      printf("Actual(%zu):\n%s\n", json.size, json.root);               \
+      printf("--------------------------------------------------\n");   \
+      return false;                                                     \
+   }                                                                    \
+   if (json.truncated == false)                                         \
+   {                                                                    \
+      printf("\n%s: didn't truncate\n", __func__);                      \
+      printf("File: ./%s:%d\n\n", __FILE__, __LINE__);                  \
+      return false;                                                     \
    }
 
 static bool kJSON_InsertNumber_PASS(void);
@@ -65,6 +72,15 @@ static bool kJSON_InsertObject_FAIL(void);
 
 int main(void)
 {
+
+#if CONFIG_KJSON_SMALLEST
+   printf("Testing CONFIG_KJSON_SMALLEST=1\n");
+#else
+   printf("Testing CONFIG_KJSON_SMALLEST=0\n");
+#endif
+
+   int result = 0;
+
    TEST(kJSON_InsertNumber_PASS());
    TEST(kJSON_InsertNumber_FAIL());
    TEST(kJSON_InsertUnsignedNumber_PASS());
@@ -86,7 +102,7 @@ int main(void)
    TEST(kJSON_InsertObject_PASS());
    TEST(kJSON_InsertObject_FAIL());
 
-   return 0;
+   return result;
 }
 
 static bool kJSON_InsertNumber_PASS(void)
