@@ -60,6 +60,8 @@ static bool kJSON_InsertArrayFloat_PASS(void);
 static bool kJSON_InsertArrayFloat_FAIL(void);
 static bool kJSON_InsertArrayString_PASS(void);
 static bool kJSON_InsertArrayString_FAIL(void);
+static bool kJSON_InsertObject_PASS(void);
+static bool kJSON_InsertObject_FAIL(void);
 
 int main(void)
 {
@@ -81,6 +83,8 @@ int main(void)
    TEST(kJSON_InsertArrayFloat_FAIL());
    TEST(kJSON_InsertArrayString_PASS());
    TEST(kJSON_InsertArrayString_FAIL());
+   TEST(kJSON_InsertObject_PASS());
+   TEST(kJSON_InsertObject_FAIL());
 
    return 0;
 }
@@ -522,19 +526,73 @@ static bool kJSON_InsertArrayString_FAIL(void)
    kjson_t json = KJSON_INITIALISE(root);
    kjson_t *jsonHandle = &json;
 
-   printf("root: %p\n", root);
-   printf("expected: %p\n", expected);
-   printf("distance: %ld\n", root - expected);
-
    const char *digits[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", NULL};
 
    kJSON_InitRoot(jsonHandle);
    kJSON_InsertArrayString(jsonHandle, "digits", digits, array_size(digits));
    kJSON_ExitRoot(jsonHandle);
 
-   printf("JSON(%zu, %zu): %s\n", json.size, strlen(root), json.root);
+   CHECK_JSON_BAD(json, expected);
 
-   printf("EXPECTED(%zu: %zu): %s\n", array_size(expected), strlen(expected), expected);
+   return true;
+}
+
+static bool kJSON_InsertObject_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"object\":{\"key\":\"value\"}}";
+#else
+   const char expected[] = "{\n"
+                           "\"object\":\t{\n"
+                           "\t\"key\":\t\"value\"\n"
+                           "}\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t *jsonHandle = &json;
+
+   kJSON_InitRoot(jsonHandle);
+
+   kJSON_EnterObject(jsonHandle, "object");
+   {
+      kJSON_InsertString(jsonHandle, "key", "value");
+   }
+   kJSON_ExitObject(jsonHandle);
+
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
+
+   return true;
+}
+
+static bool kJSON_InsertObject_FAIL(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"object\":{\"key\":\"value\"}}";
+#else
+   const char expected[] = "{\n"
+                           "\"object\":\t{\n"
+                           "\t\"key\": \"value\"\n"
+                           "}\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected) - 1] = {0};
+   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t *jsonHandle = &json;
+
+   kJSON_InitRoot(jsonHandle);
+
+   kJSON_EnterObject(jsonHandle, "object");
+   {
+      kJSON_InsertString(jsonHandle, "key", "value");
+   }
+   kJSON_ExitObject(jsonHandle);
+
+   kJSON_ExitRoot(jsonHandle);
 
    CHECK_JSON_BAD(json, expected);
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Implements the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.2.0
+//       Version : 1.2.1
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -488,7 +488,7 @@ static size_t InitRoot(char *const string)
 static size_t Trim(char *const string)
 {
    const char *const start = string;
-   const char * const end = start - 1;
+   const char *const end = start - 1;
    if (',' == *end)
    {
       return (size_t)-1;
@@ -669,12 +669,15 @@ static bool ArrayStringFits(kjson_t *const jsonHandle, const char *const key, co
    size_t total = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(ARRAY_KEY) - char_size("%s");
    for (size_t i = 0; i < size; i++)
    {
-      size_t valueSize = char_size(ARRAY_VALUE_NULL) - char_size("\"%s\"");
       if (array[i])
       {
-         valueSize = strlen(array[i]);
+         const size_t valueSize = strlen(array[i]);
+         total += valueSize + char_size(ARRAY_VALUE_STRING) - char_size("%s");
       }
-      total += valueSize + char_size(ARRAY_VALUE_STRING) - char_size("%s");
+      else
+      {
+         total += char_size(ARRAY_VALUE_NULL);
+      }
    }
    total -= ARRAY_TRIM;
    total += char_size(ARRAY_END);
