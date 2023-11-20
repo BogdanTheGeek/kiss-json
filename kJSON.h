@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Defines the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.3.0
+//       Version : 1.3.1
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ extern "C" {
 
 #define KJSON_VERSION_MAJOR (1)
 #define KJSON_VERSION_MINOR (3)
-#define KJSON_VERSION_PATCH (0)
+#define KJSON_VERSION_PATCH (1)
 
 #ifndef CONFIG_KJSON_SMALLEST
 #define CONFIG_KJSON_SMALLEST (1)
@@ -38,6 +38,7 @@ extern "C" {
 #define CONFIG_KJSON_NO_FLOAT (0)
 #endif
 
+#if CONFIG_KJSON_NO_FLOAT
 #define KJSON_INITIALISE(buffer, bufferSize) \
    {                                         \
       .root = (buffer),                      \
@@ -47,8 +48,25 @@ extern "C" {
       .depth = 0,                            \
       .newLine = "\n",                       \
       .nullIntValue = (INT_MAX),             \
+      .nullUIntValue = (UINT_MAX),           \
       .truncated = false                     \
    }
+#else
+#include <float.h>
+#define KJSON_INITIALISE(buffer, bufferSize) \
+   {                                         \
+      .root = (buffer),                      \
+      .rootSize = (bufferSize),              \
+      .tail = (buffer),                      \
+      .size = 0,                             \
+      .depth = 0,                            \
+      .newLine = "\n",                       \
+      .nullIntValue = (INT_MAX),             \
+      .nullUIntValue = (UINT_MAX),           \
+      .nullFloatValue = (FLT_MAX),           \
+      .truncated = false                     \
+   }
+#endif
 
 //------------------------------------------------------------------------------
 // Module exported type definitions

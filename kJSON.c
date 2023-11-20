@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Implements the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.2.3
+//       Version : 1.3.1
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -65,6 +65,7 @@
 
 #if !CONFIG_KJSON_NO_FLOAT
 #define FLOAT_MASK (0xFFFFFFFF)
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #define IS_FLOAT_NULL(value, nullValue) \
    ((*(size_t *)&(value)&FLOAT_MASK) == (*(size_t *)&(nullValue)&FLOAT_MASK))
 #endif
