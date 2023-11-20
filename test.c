@@ -116,7 +116,7 @@ static bool kJSON_InsertNumber_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    int number = -1234;
@@ -141,7 +141,7 @@ static bool kJSON_InsertNumber_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    int number = -1234;
@@ -166,7 +166,7 @@ static bool kJSON_InsertUnsignedNumber_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    unsigned int number = 1234;
@@ -191,7 +191,7 @@ static bool kJSON_InsertUnsignedNumber_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    unsigned int number = 1234;
@@ -216,7 +216,7 @@ static bool kJSON_InsertFloat_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    float number = -123.1234567890f;
@@ -241,7 +241,7 @@ static bool kJSON_InsertFloat_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    float number = -123.1234567890f;
@@ -266,7 +266,7 @@ static bool kJSON_InsertString_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
    const char *string = "Hello World";
 
@@ -290,7 +290,7 @@ static bool kJSON_InsertString_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
    const char *string = "Hello World";
 
@@ -314,7 +314,7 @@ static bool kJSON_InsertNull_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
@@ -337,7 +337,7 @@ static bool kJSON_InsertNull_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
@@ -361,7 +361,7 @@ static bool kJSON_InsertBoolean_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
@@ -386,7 +386,7 @@ static bool kJSON_InsertBoolean_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
@@ -410,7 +410,7 @@ static bool kJSON_InsertArrayInt_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    int digits[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, INT_MAX};
@@ -435,7 +435,7 @@ static bool kJSON_InsertArrayInt_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    int digits[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, INT_MAX};
@@ -460,7 +460,7 @@ static bool kJSON_InsertArrayFloat_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    json.nullFloatValue = -99999.0f;
@@ -487,7 +487,7 @@ static bool kJSON_InsertArrayFloat_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    json.nullFloatValue = -99999.0f;
@@ -514,7 +514,7 @@ static bool kJSON_InsertArrayString_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    const char *digits[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", NULL};
@@ -539,7 +539,7 @@ static bool kJSON_InsertArrayString_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    const char *digits[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", NULL};
@@ -566,7 +566,7 @@ static bool kJSON_InsertObject_PASS(void)
 #endif
 
    char root[sizeof(expected)] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);
@@ -597,7 +597,7 @@ static bool kJSON_InsertObject_FAIL(void)
 #endif
 
    char root[sizeof(expected) - 1] = {0};
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    kJSON_InitRoot(jsonHandle);

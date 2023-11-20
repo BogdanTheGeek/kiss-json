@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Defines the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.2.2
+//       Version : 1.3.0
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -27,8 +27,8 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 #define KJSON_VERSION_MAJOR (1)
-#define KJSON_VERSION_MINOR (2)
-#define KJSON_VERSION_PATCH (2)
+#define KJSON_VERSION_MINOR (3)
+#define KJSON_VERSION_PATCH (0)
 
 #ifndef CONFIG_KJSON_SMALLEST
 #define CONFIG_KJSON_SMALLEST (1)
@@ -38,16 +38,16 @@ extern "C" {
 #define CONFIG_KJSON_NO_FLOAT (0)
 #endif
 
-#define KJSON_INITIALISE(buffer)    \
-   {                                \
-      .root = (buffer),             \
-      .rootSize = sizeof((buffer)), \
-      .tail = (buffer),             \
-      .size = 0,                    \
-      .depth = 0,                   \
-      .newLine = "\n",              \
-      .nullIntValue = (INT_MAX),    \
-      .truncated = false            \
+#define KJSON_INITIALISE(buffer, bufferSize) \
+   {                                         \
+      .root = (buffer),                      \
+      .rootSize = (bufferSize),              \
+      .tail = (buffer),                      \
+      .size = 0,                             \
+      .depth = 0,                            \
+      .newLine = "\n",                       \
+      .nullIntValue = (INT_MAX),             \
+      .truncated = false                     \
    }
 
 //------------------------------------------------------------------------------

@@ -22,7 +22,7 @@ int main(void)
    char root[355] = {0};
 #endif
 
-   kjson_t json = KJSON_INITIALISE(root);
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
    kjson_t *jsonHandle = &json;
 
    // Use this to mark null values
