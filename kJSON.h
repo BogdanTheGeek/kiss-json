@@ -221,6 +221,21 @@ void kJSON_EnterObject(kjson_t *const jsonHandle, const char *const key);
  */
 void kJSON_ExitObject(kjson_t *const jsonHandle);
 
+/**
+ * @brief  Inserts an array of objects into the JSON object
+ * @param  jsonHandle: JSON object handle
+ * @param  key: Key of the array
+ * @return None
+ */
+void kJSON_EnterArray(kjson_t *const jsonHandle, const char *const key);
+
+/**
+ * @brief  Terminates the array of objects
+ * @param  jsonHandle: JSON object handle
+ * @return None
+ */
+void kJSON_ExitArray(kjson_t *const jsonHandle);
+
 //------------------------------------------------------------------------------
 // Module exported variables
 //------------------------------------------------------------------------------
