@@ -27,8 +27,8 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 #define KJSON_VERSION_MAJOR (1)
-#define KJSON_VERSION_MINOR (3)
-#define KJSON_VERSION_PATCH (2)
+#define KJSON_VERSION_MINOR (4)
+#define KJSON_VERSION_PATCH (0)
 
 #ifndef CONFIG_KJSON_SMALLEST
 #define CONFIG_KJSON_SMALLEST (1)

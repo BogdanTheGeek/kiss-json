@@ -17,7 +17,7 @@ Features:
 
 Limitations:
  - Key pointers are not checked
- - No arrays of objects (use `for` loop)
+ - No mixed type arrays (eg. `[1, "two", 3]`)
 
 ## Notes:
  - `kiss-json` is not a parser, use [jsmn](https://github.com/zserge/jsmn) for memory efficient parsing

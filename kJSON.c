@@ -62,7 +62,7 @@
 #define ARRAY_END            ("],")
 #define ARRAY_TRIM           (char_size(", "))
 #define OBJECT_KEY           ("\"%s\":\t{")
-#define OBJECT_KEYLESS       ("\t{")
+#define OBJECT_KEYLESS       ("{")
 #define OBJECT_END           ("},")
 #endif // CONFIG_KJSON_SMALLEST
 

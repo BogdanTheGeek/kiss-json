@@ -70,6 +70,8 @@ static bool kJSON_InsertArrayString_PASS(void);
 static bool kJSON_InsertArrayString_FAIL(void);
 static bool kJSON_InsertObject_PASS(void);
 static bool kJSON_InsertObject_FAIL(void);
+static bool kJSON_EnterArray_PASS(void);
+static bool kJSON_EnterArray_FAIL(void);
 
 int main(void)
 {
@@ -103,6 +105,8 @@ int main(void)
    TEST(kJSON_InsertArrayString_FAIL());
    TEST(kJSON_InsertObject_PASS());
    TEST(kJSON_InsertObject_FAIL());
+   TEST(kJSON_EnterArray_PASS());
+   TEST(kJSON_EnterArray_FAIL());
 
    return result;
 }
@@ -638,5 +642,93 @@ static bool kJSON_InsertObject_FAIL(void)
 
    CHECK_JSON_BAD(json, expected);
 
+   return true;
+}
+
+static bool kJSON_EnterArray_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"array\":[{\"foo\":\"bar\"},{\"baz\":123}]}";
+#else
+   const char expected[] = "{\n"
+                           "\"array\":\t[\n"
+                           "\t{\n"
+                           "\t\t\"foo\":\t\"bar\"\n"
+                           "\t},\n"
+                           "\t{\n"
+                           "\t\t\"baz\":\t123\n"
+                           "\t}\n"
+                           "]\n"
+                           "}";
+#endif
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   kJSON_InitRoot(jsonHandle);
+
+   kJSON_EnterArray(jsonHandle, "array");
+   {
+      kJSON_EnterObject(jsonHandle, NULL);
+      {
+         kJSON_InsertString(jsonHandle, "foo", "bar");
+      }
+      kJSON_ExitObject(jsonHandle);
+
+      kJSON_EnterObject(jsonHandle, NULL);
+      {
+         kJSON_InsertNumber(jsonHandle, "baz", 123);
+      }
+      kJSON_ExitObject(jsonHandle);
+   }
+   kJSON_ExitArray(jsonHandle);
+
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
+
+   return true;
+}
+
+static bool kJSON_EnterArray_FAIL(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"array\":[{\"foo\":\"bar\"},{\"baz\":123}]}";
+#else
+   const char expected[] = "{\n"
+                           "\"array\":\t[\n"
+                           "\t{\n"
+                           "\t\t\"foo\":\t\"bar\"\n"
+                           "\t},\n"
+                           "\t{\n"
+                           "\t\t\"baz\":\t123\n"
+                           "\t}\n"
+                           "]\n"
+                           "}";
+#endif
+   char root[sizeof(expected) - 1] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+   kJSON_InitRoot(jsonHandle);
+
+   kJSON_EnterArray(jsonHandle, "array");
+   {
+      kJSON_EnterObject(jsonHandle, NULL);
+      {
+         kJSON_InsertString(jsonHandle, "foo", "bar");
+      }
+      kJSON_ExitObject(jsonHandle);
+
+      kJSON_EnterObject(jsonHandle, NULL);
+      {
+         kJSON_InsertNumber(jsonHandle, "baz", 123);
+      }
+      kJSON_ExitObject(jsonHandle);
+   }
+   kJSON_ExitArray(jsonHandle);
+
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_BAD(json, expected);
    return true;
 }
