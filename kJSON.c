@@ -15,6 +15,7 @@
 //------------------------------------------------------------------------------
 #include "kJSON.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -67,7 +68,7 @@
 #define FLOAT_MASK (0xFFFFFFFF)
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #define IS_FLOAT_NULL(value, nullValue) \
-   ((*(size_t *)&(value)&FLOAT_MASK) == (*(size_t *)&(nullValue)&FLOAT_MASK))
+   ((*(uint32_t *)&(value) & FLOAT_MASK) == (*(uint32_t *)&(nullValue) & FLOAT_MASK))
 #endif
 
 //------------------------------------------------------------------------------
