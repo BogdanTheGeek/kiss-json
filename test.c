@@ -59,6 +59,7 @@ static bool kJSON_InsertString_PASS(void);
 static bool kJSON_InsertString_FAIL(void);
 static bool kJSON_InsertNull_PASS(void);
 static bool kJSON_InsertNull_FAIL(void);
+static bool kJSON_InsertNullFloat_PASS(void);
 static bool kJSON_InsertBoolean_PASS(void);
 static bool kJSON_InsertBoolean_FAIL(void);
 static bool kJSON_InsertArrayInt_PASS(void);
@@ -91,6 +92,7 @@ int main(void)
    TEST(kJSON_InsertString_FAIL());
    TEST(kJSON_InsertNull_PASS());
    TEST(kJSON_InsertNull_FAIL());
+   TEST(kJSON_InsertNullFloat_PASS());
    TEST(kJSON_InsertBoolean_PASS());
    TEST(kJSON_InsertBoolean_FAIL());
    TEST(kJSON_InsertArrayInt_PASS());
@@ -345,6 +347,30 @@ static bool kJSON_InsertNull_FAIL(void)
    kJSON_ExitRoot(jsonHandle);
 
    CHECK_JSON_BAD(json, expected);
+
+   return true;
+}
+
+static bool kJSON_InsertNullFloat_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"number\":null}";
+#else
+   const char expected[] = "{\n"
+                           "\"number\":\tnull\n"
+                           "}";
+#endif
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   json.nullFloatValue = -99999.0f;
+   float number = -99999.0f;
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertFloat(jsonHandle, "number", number, 2);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
 
    return true;
 }

@@ -17,9 +17,24 @@ main: $(OBJ) main.c
 	@$(CC) -o $@ $^ $(CFLAGS)
 	@echo "$(SUCCESS)$@: done!$(RESET)"
 
-test.bin: $(OBJ) test.c
+kJSON_small.o: kJSON.c kJSON.h
+	@echo "$(WARNING)Building object $@ $(RESET)"
+	@$(CC) -o $@ -c $< $(CFLAGS) -DCONFIG_KJSON_SMALLEST=1
+	@echo "$(SUCCESS)$@: done!$(RESET)"
+
+kJSON_large.o: kJSON.c kJSON.h
+	@echo "$(WARNING)Building object $@ $(RESET)"
+	@$(CC) -o $@ -c $< $(CFLAGS) -DCONFIG_KJSON_SMALLEST=0
+	@echo "$(SUCCESS)$@: done!$(RESET)"
+
+test_small.bin: kJSON_small.o test.c
 	@echo "$(WARNING)Building: $@ $(RESET)"
-	@$(CC) -o $@ $^ $(CFLAGS)
+	@$(CC) -o $@ $^ $(CFLAGS) -DCONFIG_KJSON_SMALLEST=1
+	@echo "$(SUCCESS)$@: done!$(RESET)"
+
+test_large.bin: kJSON_large.o test.c
+	@echo "$(WARNING)Building: $@ $(RESET)"
+	@$(CC) -o $@ $^ $(CFLAGS) -DCONFIG_KJSON_SMALLEST=0
 	@echo "$(SUCCESS)$@: done!$(RESET)"
 
 %.o: %.c %.h
@@ -33,10 +48,11 @@ run: main
 	@./$<
 
 .PHONY: test
-test: test.bin
-	@chmod +x $<
-	@echo "$(WARNING)Running test: $< $(RESET)"
-	@./$< && echo "$(SUCCESS)PASS!$(RESET)" || echo "$(ERROR)FAIL!$(RESET)"
+test: test_small.bin test_large.bin
+	@chmod +x test_small.bin
+	@chmod +x test_large.bin
+	@./test_small.bin && echo "$(SUCCESS)Small config PASS!$(RESET)" || echo "$(ERROR)Small config FAIL!$(RESET)"
+	@./test_large.bin && echo "$(SUCCESS)Large config PASS!$(RESET)" || echo "$(ERROR)Large config FAIL!$(RESET)"
 
 .PHONY: clean
 clean:
