@@ -45,6 +45,7 @@
 #define ARRAY_END            ("],")
 #define ARRAY_TRIM           (char_size(","))
 #define OBJECT_KEY           ("\"%s\":{")
+#define OBJECT_KEYLESS       ("{")
 #define OBJECT_END           ("},")
 #else
 #define STRING               ("\"%s\":\t\"%s\",")
@@ -61,6 +62,7 @@
 #define ARRAY_END            ("],")
 #define ARRAY_TRIM           (char_size(", "))
 #define OBJECT_KEY           ("\"%s\":\t{")
+#define OBJECT_KEYLESS       ("\t{")
 #define OBJECT_END           ("},")
 #endif // CONFIG_KJSON_SMALLEST
 
@@ -116,6 +118,8 @@ static size_t Trim(char *const string);
 static size_t ExitRoot(char *const string);
 static size_t EnterObject(char *const string, const char *const key);
 static size_t ExitObject(char *const string);
+static size_t EnterArray(char *const string, const char *const key);
+static size_t ExitArray(char *const string);
 static size_t InsertDepth(char *const string, const char *const newLine, const int depth);
 static void StartEntry(kjson_t *const jsonHandle);
 
@@ -373,6 +377,38 @@ void kJSON_ExitObject(kjson_t *const jsonHandle)
    jsonHandle->size -= strlen(jsonHandle->newLine) + jsonHandle->depth;
 }
 
+void kJSON_EnterArray(kjson_t *const jsonHandle, const char *const key)
+{
+   if (ObjectFits(jsonHandle, key))
+   {
+      StartEntry(jsonHandle);
+      const size_t bytes = EnterArray(jsonHandle->tail, key);
+      jsonHandle->size += bytes;
+      jsonHandle->tail += bytes;
+      jsonHandle->size += strlen(jsonHandle->newLine) + jsonHandle->depth + (char_size(ARRAY_END) - 1);
+#if !CONFIG_KJSON_SMALLEST
+      jsonHandle->depth++;
+#endif
+   }
+   else
+   {
+      jsonHandle->truncated = true;
+   }
+}
+
+void kJSON_ExitArray(kjson_t *const jsonHandle)
+{
+   size_t bytes = Trim(jsonHandle->tail);
+   jsonHandle->tail += bytes;
+#if !CONFIG_KJSON_SMALLEST
+   jsonHandle->depth--;
+#endif
+   StartEntry(jsonHandle);
+   bytes = ExitArray(jsonHandle->tail);
+   jsonHandle->tail += bytes;
+   jsonHandle->size -= strlen(jsonHandle->newLine) + jsonHandle->depth;
+}
+
 //------------------------------------------------------------------------------
 // Module static functions
 //------------------------------------------------------------------------------
@@ -511,7 +547,8 @@ static size_t EnterObject(char *const string, const char *const key)
 {
    char *const start = string;
    char *end = start;
-   end += sprintf(end, OBJECT_KEY, key);
+   if (!key) end += sprintf(end, OBJECT_KEYLESS);
+   else end += sprintf(end, OBJECT_KEY, key);
    return (size_t)(end - start);
 }
 
@@ -520,6 +557,22 @@ static size_t ExitObject(char *const string)
    char *const start = string;
    char *end = start;
    end += sprintf(end, OBJECT_END);
+   return (size_t)(end - start);
+}
+
+static size_t EnterArray(char *const string, const char *const key)
+{
+   char *const start = string;
+   char *end = start;
+   end += sprintf(end, ARRAY_KEY, key);
+   return (size_t)(end - start);
+}
+
+static size_t ExitArray(char *const string)
+{
+   char *const start = string;
+   char *end = start;
+   end += sprintf(end, ARRAY_END);
    return (size_t)(end - start);
 }
 
@@ -688,7 +741,9 @@ static bool ArrayStringFits(kjson_t *const jsonHandle, const char *const key, co
 
 static bool ObjectFits(kjson_t *const jsonHandle, const char *const key)
 {
-   size_t size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(OBJECT_KEY) - char_size("%s");
+   size_t size;
+   if (!key) size = strlen(jsonHandle->newLine) + jsonHandle->depth + char_size(OBJECT_KEYLESS) - char_size("%s");
+   else size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(OBJECT_KEY) - char_size("%s");
    size += strlen(jsonHandle->newLine) + jsonHandle->depth + (char_size(OBJECT_END) - 1); // Closing bracket
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }
