@@ -248,6 +248,11 @@ void kJSON_InsertBoolean(kjson_t *const jsonHandle, const char *const key, bool 
 
 void kJSON_InsertNull(kjson_t *const jsonHandle, const char *const key)
 {
+   if (jsonHandle->skipNullValues)
+   {
+      return;
+   }
+
    if (NullFits(jsonHandle, key))
    {
       StartEntry(jsonHandle);
@@ -547,8 +552,10 @@ static size_t EnterObject(char *const string, const char *const key)
 {
    char *const start = string;
    char *end = start;
-   if (!key) end += sprintf(end, OBJECT_KEYLESS);
-   else end += sprintf(end, OBJECT_KEY, key);
+   if (!key)
+      end += sprintf(end, OBJECT_KEYLESS);
+   else
+      end += sprintf(end, OBJECT_KEY, key);
    return (size_t)(end - start);
 }
 
@@ -742,8 +749,10 @@ static bool ArrayStringFits(kjson_t *const jsonHandle, const char *const key, co
 static bool ObjectFits(kjson_t *const jsonHandle, const char *const key)
 {
    size_t size;
-   if (!key) size = strlen(jsonHandle->newLine) + jsonHandle->depth + char_size(OBJECT_KEYLESS) - char_size("%s");
-   else size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(OBJECT_KEY) - char_size("%s");
+   if (!key)
+      size = strlen(jsonHandle->newLine) + jsonHandle->depth + char_size(OBJECT_KEYLESS) - char_size("%s");
+   else
+      size = strlen(jsonHandle->newLine) + jsonHandle->depth + strlen(key) + char_size(OBJECT_KEY) - char_size("%s");
    size += strlen(jsonHandle->newLine) + jsonHandle->depth + (char_size(OBJECT_END) - 1); // Closing bracket
    return (jsonHandle->size + size <= jsonHandle->rootSize);
 }

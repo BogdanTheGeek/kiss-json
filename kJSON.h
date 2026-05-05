@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Defines the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.3.1
+//       Version : 1.5.0
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 #define KJSON_VERSION_MAJOR (1)
-#define KJSON_VERSION_MINOR (4)
+#define KJSON_VERSION_MINOR (5)
 #define KJSON_VERSION_PATCH (0)
 
 #ifndef CONFIG_KJSON_SMALLEST
@@ -49,6 +49,7 @@ extern "C" {
       .newLine = "\n",                       \
       .nullIntValue = (INT_MAX),             \
       .nullUIntValue = (UINT_MAX),           \
+      .skipNullValues = false,               \
       .truncated = false                     \
    }
 #else
@@ -64,6 +65,7 @@ extern "C" {
       .nullIntValue = (INT_MAX),             \
       .nullUIntValue = (UINT_MAX),           \
       .nullFloatValue = (FLT_MAX),           \
+      .skipNullValues = false,               \
       .truncated = false                     \
    }
 #endif
@@ -84,10 +86,11 @@ typedef struct
 #if !CONFIG_KJSON_NO_FLOAT
    float nullFloatValue; // Value that marks a null float
 #endif
+   bool skipNullValues; // If true, null values will not be inserted into the JSON object
 
    // Output parameters
-   size_t size;    // Size of the output
    bool truncated; // True if some objects could not fit
+   size_t size;    // Size of the output
 
    // Internal parameters
    unsigned short depth; // Used to track the depth of the JSON object

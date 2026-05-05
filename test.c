@@ -1,7 +1,7 @@
 /*
  * File    : test.c
  * Created : 29/04/2023
- * Modified: 29/04/2023
+ * Modified: 05/05/2026
  * Authors : Bogdan Ionescu
  */
 
@@ -20,13 +20,14 @@
    }
 
 #define CHECK_JSON_GOOD(json, expected)                                 \
-   if (strcmp(json.root, expected) != 0)                                \
+   if (strcmp(json.root, expected) != 0 || json.truncated)              \
    {                                                                    \
       printf("\n%s FAILED:\n", __func__);                               \
       printf("File: ./%s:%d\n", __FILE__, __LINE__);                    \
       printf("--------------------------------------------------\n");   \
       printf("Expected(%zu):\n%s\n\n", array_size(expected), expected); \
       printf("Actual(%zu):\n%s\n", json.size, json.root);               \
+      printf("Truncated: %s\n", json.truncated ? "true" : "false");     \
       printf("--------------------------------------------------\n");   \
       return false;                                                     \
    }
@@ -72,6 +73,7 @@ static bool kJSON_InsertObject_PASS(void);
 static bool kJSON_InsertObject_FAIL(void);
 static bool kJSON_EnterArray_PASS(void);
 static bool kJSON_EnterArray_FAIL(void);
+static bool kJSON_SkipNullValues_PASS(void);
 
 int main(void)
 {
@@ -107,6 +109,7 @@ int main(void)
    TEST(kJSON_InsertObject_FAIL());
    TEST(kJSON_EnterArray_PASS());
    TEST(kJSON_EnterArray_FAIL());
+   TEST(kJSON_SkipNullValues_PASS());
 
    return result;
 }
@@ -730,5 +733,32 @@ static bool kJSON_EnterArray_FAIL(void)
    kJSON_ExitRoot(jsonHandle);
 
    CHECK_JSON_BAD(json, expected);
+   return true;
+}
+
+static bool kJSON_SkipNullValues_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"string\":\"Hello World\"}";
+#else
+   const char expected[] = "{\n"
+                           "\"string\":\t\"Hello World\"\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   json.skipNullValues = true;
+   kjson_t *jsonHandle = &json;
+
+   const char *string = "Hello World";
+
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertNull(jsonHandle, "abc");
+   kJSON_InsertString(jsonHandle, "string", string);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
+
    return true;
 }
