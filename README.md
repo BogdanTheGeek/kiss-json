@@ -9,7 +9,8 @@ Features:
  - Custom runtime newline
  - Handle `null` strings
  - Custom `null` value for numbers (eg. `-999` will be replaced with `null`)
- - Floating point support can be disabled
+ - Floating point support can be disabled (`CONFIG_KJSON_NO_FLOAT`)
+ - Double precision support can be disabled independently (`CONFIG_KJSON_NO_DOUBLE`)
  - Compile time minimisation
  - Always produces valid json
  - Alerts the user if a key was skiped (not enough room in buffer)

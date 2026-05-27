@@ -17,9 +17,9 @@ int main(void)
 
 // Buffer size should include the null terminator
 #if CONFIG_KJSON_SMALLEST
-   char root[284] = {0};
+   char root[512] = {0};
 #else
-   char root[355] = {0};
+   char root[640] = {0};
 #endif
 
    kjson_t json = KJSON_INITIALISE(root, sizeof(root));
@@ -36,6 +36,7 @@ int main(void)
 
    kJSON_InsertArrayInt(jsonHandle, "digits", digits, array_size(digits));
 
+#if !CONFIG_KJSON_NO_FLOAT
    kJSON_InsertFloat(jsonHandle, "pi", 3.14159265f, 2);
 
    const float fNull = -99.0f;
@@ -43,6 +44,17 @@ int main(void)
 
    float temps[] = {12.5f, 13.2f, 14.1f, -99.0f, 16.0f, 17.0f, 18.0f};
    kJSON_InsertArrayFloat(jsonHandle, "temps", temps, array_size(temps), 2);
+#endif
+
+#if !CONFIG_KJSON_NO_DOUBLE
+   kJSON_InsertDouble(jsonHandle, "e", 2.718281828459045, 4);
+
+   const double dNull = -9999.0;
+   json.nullDoubleValue = dNull;
+
+   double voltages[] = {3.3001, 3.2999, -9999.0, 3.3010};
+   kJSON_InsertArrayDouble(jsonHandle, "voltages", voltages, array_size(voltages), 3);
+#endif
 
    kJSON_EnterObject(jsonHandle, "people");
    {

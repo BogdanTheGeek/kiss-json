@@ -54,19 +54,36 @@ static bool kJSON_InsertNumber_PASS(void);
 static bool kJSON_InsertNumber_FAIL(void);
 static bool kJSON_InsertUnsignedNumber_PASS(void);
 static bool kJSON_InsertUnsignedNumber_FAIL(void);
+#if !CONFIG_KJSON_NO_FLOAT
 static bool kJSON_InsertFloat_PASS(void);
 static bool kJSON_InsertFloat_FAIL(void);
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+static bool kJSON_InsertDouble_PASS(void);
+static bool kJSON_InsertDouble_FAIL(void);
+#endif
 static bool kJSON_InsertString_PASS(void);
 static bool kJSON_InsertString_FAIL(void);
 static bool kJSON_InsertNull_PASS(void);
 static bool kJSON_InsertNull_FAIL(void);
+#if !CONFIG_KJSON_NO_FLOAT
 static bool kJSON_InsertNullFloat_PASS(void);
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+static bool kJSON_InsertNullDouble_PASS(void);
+#endif
 static bool kJSON_InsertBoolean_PASS(void);
 static bool kJSON_InsertBoolean_FAIL(void);
 static bool kJSON_InsertArrayInt_PASS(void);
 static bool kJSON_InsertArrayInt_FAIL(void);
+#if !CONFIG_KJSON_NO_FLOAT
 static bool kJSON_InsertArrayFloat_PASS(void);
 static bool kJSON_InsertArrayFloat_FAIL(void);
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+static bool kJSON_InsertArrayDouble_PASS(void);
+static bool kJSON_InsertArrayDouble_FAIL(void);
+#endif
 static bool kJSON_InsertArrayString_PASS(void);
 static bool kJSON_InsertArrayString_FAIL(void);
 static bool kJSON_InsertObject_PASS(void);
@@ -90,19 +107,36 @@ int main(void)
    TEST(kJSON_InsertNumber_FAIL());
    TEST(kJSON_InsertUnsignedNumber_PASS());
    TEST(kJSON_InsertUnsignedNumber_FAIL());
+#if !CONFIG_KJSON_NO_FLOAT
    TEST(kJSON_InsertFloat_PASS());
    TEST(kJSON_InsertFloat_FAIL());
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+   TEST(kJSON_InsertDouble_PASS());
+   TEST(kJSON_InsertDouble_FAIL());
+#endif
    TEST(kJSON_InsertString_PASS());
    TEST(kJSON_InsertString_FAIL());
    TEST(kJSON_InsertNull_PASS());
    TEST(kJSON_InsertNull_FAIL());
+#if !CONFIG_KJSON_NO_FLOAT
    TEST(kJSON_InsertNullFloat_PASS());
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+   TEST(kJSON_InsertNullDouble_PASS());
+#endif
    TEST(kJSON_InsertBoolean_PASS());
    TEST(kJSON_InsertBoolean_FAIL());
    TEST(kJSON_InsertArrayInt_PASS());
    TEST(kJSON_InsertArrayInt_FAIL());
+#if !CONFIG_KJSON_NO_FLOAT
    TEST(kJSON_InsertArrayFloat_PASS());
    TEST(kJSON_InsertArrayFloat_FAIL());
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+   TEST(kJSON_InsertArrayDouble_PASS());
+   TEST(kJSON_InsertArrayDouble_FAIL());
+#endif
    TEST(kJSON_InsertArrayString_PASS());
    TEST(kJSON_InsertArrayString_FAIL());
    TEST(kJSON_InsertObject_PASS());
@@ -214,6 +248,7 @@ static bool kJSON_InsertUnsignedNumber_FAIL(void)
    return true;
 }
 
+#if !CONFIG_KJSON_NO_FLOAT
 static bool kJSON_InsertFloat_PASS(void)
 {
 #if CONFIG_KJSON_SMALLEST
@@ -263,6 +298,60 @@ static bool kJSON_InsertFloat_FAIL(void)
 
    return true;
 }
+
+#endif
+
+#if !CONFIG_KJSON_NO_DOUBLE
+static bool kJSON_InsertDouble_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"number\":-123.12}";
+#else
+   const char expected[] = "{\n"
+                           "\"number\":\t-123.12\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   double number = -123.1234567890123;
+
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertDouble(jsonHandle, "number", number, 2);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
+
+   return true;
+}
+
+static bool kJSON_InsertDouble_FAIL(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"number\":-123.12}";
+#else
+   const char expected[] = "{\n"
+                           "\"number\":\t-123.12\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected) - 1] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   double number = -123.1234567890123;
+
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertDouble(jsonHandle, "number", number, 2);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_BAD(json, expected);
+
+   return true;
+}
+#endif
 
 static bool kJSON_InsertString_PASS(void)
 {
@@ -358,6 +447,7 @@ static bool kJSON_InsertNull_FAIL(void)
    return true;
 }
 
+#if !CONFIG_KJSON_NO_FLOAT
 static bool kJSON_InsertNullFloat_PASS(void)
 {
 #if CONFIG_KJSON_SMALLEST
@@ -381,6 +471,33 @@ static bool kJSON_InsertNullFloat_PASS(void)
 
    return true;
 }
+#endif
+
+#if !CONFIG_KJSON_NO_DOUBLE
+static bool kJSON_InsertNullDouble_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"number\":null}";
+#else
+   const char expected[] = "{\n"
+                           "\"number\":\tnull\n"
+                           "}";
+#endif
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   json.nullDoubleValue = -99999.0;
+   double number = -99999.0;
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertDouble(jsonHandle, "number", number, 2);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
+
+   return true;
+}
+#endif
 
 static bool kJSON_InsertBoolean_PASS(void)
 {
@@ -482,6 +599,7 @@ static bool kJSON_InsertArrayInt_FAIL(void)
    return true;
 }
 
+#if !CONFIG_KJSON_NO_FLOAT
 static bool kJSON_InsertArrayFloat_PASS(void)
 {
 #if CONFIG_KJSON_SMALLEST
@@ -535,6 +653,64 @@ static bool kJSON_InsertArrayFloat_FAIL(void)
 
    return true;
 }
+
+#endif
+
+#if !CONFIG_KJSON_NO_DOUBLE
+static bool kJSON_InsertArrayDouble_PASS(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"digits\":[0.0,1.1,2.3,3.3,4.4,5.5,6.6,7.7,8.8,null]}";
+#else
+   const char expected[] = "{\n"
+                           "\"digits\":\t[0.0, 1.1, 2.3, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, null]\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected)] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   json.nullDoubleValue = -99999.0;
+
+   double digits[] = {0.0, 1.1222, 2.29999, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, -99999.0};
+
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertArrayDouble(jsonHandle, "digits", digits, array_size(digits), 1);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_GOOD(json, expected);
+
+   return true;
+}
+
+static bool kJSON_InsertArrayDouble_FAIL(void)
+{
+#if CONFIG_KJSON_SMALLEST
+   const char expected[] = "{\"digits\":[0.0,1.1,2.3,3.3,4.4,5.5,6.6,7.7,8.8,null]}";
+#else
+   const char expected[] = "{\n"
+                           "\"digits\":\t[0.0, 1.1, 2.3, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, null]\n"
+                           "}";
+#endif
+
+   char root[sizeof(expected) - 1] = {0};
+   kjson_t json = KJSON_INITIALISE(root, sizeof(root));
+   kjson_t *jsonHandle = &json;
+
+   json.nullDoubleValue = -99999.0;
+
+   double digits[] = {0.0, 1.1222, 2.29999, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, -99999.0};
+
+   kJSON_InitRoot(jsonHandle);
+   kJSON_InsertArrayDouble(jsonHandle, "digits", digits, array_size(digits), 1);
+   kJSON_ExitRoot(jsonHandle);
+
+   CHECK_JSON_BAD(json, expected);
+
+   return true;
+}
+#endif
 
 static bool kJSON_InsertArrayString_PASS(void)
 {

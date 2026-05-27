@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //       Purpose : Defines the kJSON API
 //------------------------------------------------------------------------------
-//       Version : 1.5.0
+//       Version : 1.6.0
 //------------------------------------------------------------------------------
 //       Notes : None
 //------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ extern "C" {
 //------------------------------------------------------------------------------
 
 #define KJSON_VERSION_MAJOR (1)
-#define KJSON_VERSION_MINOR (5)
+#define KJSON_VERSION_MINOR (6)
 #define KJSON_VERSION_PATCH (0)
 
 #ifndef CONFIG_KJSON_SMALLEST
@@ -38,37 +38,41 @@ extern "C" {
 #define CONFIG_KJSON_NO_FLOAT (0)
 #endif
 
-#if CONFIG_KJSON_NO_FLOAT
-#define KJSON_INITIALISE(buffer, bufferSize) \
-   {                                         \
-      .root = (buffer),                      \
-      .rootSize = (bufferSize),              \
-      .tail = (buffer),                      \
-      .size = 0,                             \
-      .depth = 0,                            \
-      .newLine = "\n",                       \
-      .nullIntValue = (INT_MAX),             \
-      .nullUIntValue = (UINT_MAX),           \
-      .skipNullValues = false,               \
-      .truncated = false                     \
-   }
-#else
-#include <float.h>
-#define KJSON_INITIALISE(buffer, bufferSize) \
-   {                                         \
-      .root = (buffer),                      \
-      .rootSize = (bufferSize),              \
-      .tail = (buffer),                      \
-      .size = 0,                             \
-      .depth = 0,                            \
-      .newLine = "\n",                       \
-      .nullIntValue = (INT_MAX),             \
-      .nullUIntValue = (UINT_MAX),           \
-      .nullFloatValue = (FLT_MAX),           \
-      .skipNullValues = false,               \
-      .truncated = false                     \
-   }
+#ifndef CONFIG_KJSON_NO_DOUBLE
+#define CONFIG_KJSON_NO_DOUBLE (0)
 #endif
+
+#if !CONFIG_KJSON_NO_FLOAT || !CONFIG_KJSON_NO_DOUBLE
+#include <float.h>
+#endif
+
+#if CONFIG_KJSON_NO_FLOAT
+#define KJSON_FLOAT_INITIALISE
+#else
+#define KJSON_FLOAT_INITIALISE .nullFloatValue = (FLT_MAX),
+#endif
+
+#if CONFIG_KJSON_NO_DOUBLE
+#define KJSON_DOUBLE_INITIALISE
+#else
+#define KJSON_DOUBLE_INITIALISE .nullDoubleValue = (DBL_MAX),
+#endif
+
+#define KJSON_INITIALISE(buffer, bufferSize) \
+   {                                         \
+      .root = (buffer),                      \
+      .rootSize = (bufferSize),              \
+      .tail = (buffer),                      \
+      .size = 0,                             \
+      .depth = 0,                            \
+      .newLine = "\n",                       \
+      .nullIntValue = (INT_MAX),             \
+      .nullUIntValue = (UINT_MAX),           \
+      KJSON_FLOAT_INITIALISE                 \
+      KJSON_DOUBLE_INITIALISE                \
+      .skipNullValues = false,               \
+      .truncated = false                     \
+   }
 
 //------------------------------------------------------------------------------
 // Module exported type definitions
@@ -85,6 +89,9 @@ typedef struct
    unsigned int nullUIntValue; // Value that marks a null unsigned integer
 #if !CONFIG_KJSON_NO_FLOAT
    float nullFloatValue; // Value that marks a null float
+#endif
+#if !CONFIG_KJSON_NO_DOUBLE
+   double nullDoubleValue; // Value that marks a null double
 #endif
    bool skipNullValues; // If true, null values will not be inserted into the JSON object
 
@@ -127,6 +134,7 @@ void kJSON_InsertNumber(kjson_t *const jsonHandle, const char *const key, const 
  */
 void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key, const unsigned int value);
 
+#if !CONFIG_KJSON_NO_FLOAT
 /**
  * @brief  Inserts a float into the JSON object
  * @param  jsonHandle: JSON object handle
@@ -136,6 +144,19 @@ void kJSON_InsertUnsignedNumber(kjson_t *const jsonHandle, const char *const key
  * @return None
  */
 void kJSON_InsertFloat(kjson_t *const jsonHandle, const char *const key, const float value, const unsigned int decimals);
+#endif
+
+#if !CONFIG_KJSON_NO_DOUBLE
+/**
+ * @brief  Inserts a double into the JSON object
+ * @param  jsonHandle: JSON object handle
+ * @param  key: Key of the double
+ * @param  value: Value of the double
+ * @param  decimals: Number of decimals to use
+ * @return None
+ */
+void kJSON_InsertDouble(kjson_t *const jsonHandle, const char *const key, const double value, const unsigned int decimals);
+#endif
 
 /**
  * @brief  Inserts a boolean into the JSON object
@@ -174,6 +195,7 @@ void kJSON_InsertArrayInt(kjson_t *const jsonHandle, const char *const key, cons
  */
 void kJSON_InsertArrayUInt(kjson_t *const jsonHandle, const char *const key, const unsigned int *const array, const size_t size);
 
+#if !CONFIG_KJSON_NO_FLOAT
 /**
  * @brief  Inserts an array of floats into the JSON object
  * @param  jsonHandle: JSON object handle
@@ -184,6 +206,20 @@ void kJSON_InsertArrayUInt(kjson_t *const jsonHandle, const char *const key, con
  * @return None
  */
 void kJSON_InsertArrayFloat(kjson_t *const jsonHandle, const char *const key, const float *const array, const size_t size, const unsigned int decimals);
+#endif
+
+#if !CONFIG_KJSON_NO_DOUBLE
+/**
+ * @brief  Inserts an array of doubles into the JSON object
+ * @param  jsonHandle: JSON object handle
+ * @param  key: Key of the array
+ * @param  array: Array of doubles
+ * @param  size: Size of the array
+ * @param  decimals: Number of decimals to use
+ * @return None
+ */
+void kJSON_InsertArrayDouble(kjson_t *const jsonHandle, const char *const key, const double *const array, const size_t size, const unsigned int decimals);
+#endif
 
 /**
  * @brief  Inserts an array of strings into the JSON object
